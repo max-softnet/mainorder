@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WorkOrderConfirmed;
 use App\Models\Client;
 use App\Models\ClientRoute;
 use App\Models\CarrierRoute;
+use App\Models\Setting;
 use App\Models\WorkOrder;
 use App\Models\WorkOrderUpdate;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class WorkOrderController extends Controller
 {
@@ -107,11 +110,29 @@ class WorkOrderController extends Controller
 
         // Gestione cambio stato → confermato
         if ($newStatus === 'confermato' && $oldStatus === 'in_attesa') {
-            $mittente     = $user->email;
-            $contacts     = $workOrder->carrierContacts()->get();
-            $destinatari  = $contacts->pluck('email')->filter()->implode(', ');
+            $mittente    = $user->email;
+            $contacts    = $workOrder->carrierContacts()->get();
+            $destinatari = $contacts->pluck('email')->filter()->implode(', ');
             $workOrder->conferma($mittente, $destinatari ?: '—');
             unset($data['status']);
+
+            // Invio email con PDF allegato
+            try {
+                Setting::applySmtp();
+                $workOrder->load(['cliente', 'carrier', 'vehicleType', 'stops']);
+                $mailable = new WorkOrderConfirmed($workOrder);
+
+                // Al mittente (utente che conferma)
+                Mail::to($user->email)->send($mailable);
+
+                // Ai contatti del trasportatore
+                $emailsContatti = $contacts->pluck('email')->filter()->values();
+                if ($emailsContatti->isNotEmpty()) {
+                    Mail::to($emailsContatti->toArray())->send(new WorkOrderConfirmed($workOrder));
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Invio mail ordine fallito: ' . $e->getMessage());
+            }
         }
 
         // Traccia altri cambi stato
