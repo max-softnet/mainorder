@@ -22,7 +22,7 @@ const TYPE_ICONS = {
 
 // Ordine dei campi all'interno di ciascun gruppo
 const FIELD_ORDER = {
-  general: ['app_name'],
+  general: ['app_name', 'google_maps_key'],
   company: [
     'company_name', 'company_piva',
     'company_address', 'company_city',

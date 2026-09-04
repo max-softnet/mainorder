@@ -3,6 +3,25 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 // --- Google Maps loader ---
 let googleLoaderPromise = null;
 let googleApiWorks = true; // false dopo il primo 403, persiste per tutta la sessione
+let resolvedApiKey = null; // cache della chiave letta dal backend
+
+async function resolveApiKey() {
+  if (resolvedApiKey !== null) return resolvedApiKey;
+  // Prova prima dal backend (impostazioni admin), poi da .env come fallback
+  try {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+    const res = await fetch(`${baseUrl}/config`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.google_maps_key) {
+        resolvedApiKey = data.google_maps_key;
+        return resolvedApiKey;
+      }
+    }
+  } catch (_) {}
+  resolvedApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+  return resolvedApiKey;
+}
 
 function loadGoogleMaps(apiKey) {
   if (googleLoaderPromise) return googleLoaderPromise;
@@ -77,25 +96,26 @@ function nominatimLabel(item) {
 export default function AddressAutocomplete({
   value, onChange, placeholder = 'Cerca indirizzo...', disabled = false,
 }) {
-  const googleApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  const useGoogle = Boolean(googleApiKey);
-
   const [inputValue, setInputValue] = useState(value || '');
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
   const [activeIdx, setActiveIdx] = useState(-1);
   const [searching, setSearching] = useState(false);
+  const [useGoogle, setUseGoogle] = useState(false);
 
   const debounceRef = useRef(null);
   const wrapRef = useRef(null);
 
   useEffect(() => {
-    if (!useGoogle) return;
-    loadGoogleMaps(googleApiKey)
-      .then(() => setGoogleReady(true))
-      .catch(() => {});
-  }, [googleApiKey, useGoogle]);
+    resolveApiKey().then(key => {
+      if (!key) return;
+      setUseGoogle(true);
+      loadGoogleMaps(key)
+        .then(() => setGoogleReady(true))
+        .catch(() => {});
+    });
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {

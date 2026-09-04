@@ -20,6 +20,13 @@ use Illuminate\Support\Facades\Route;
 // Auth
 Route::post('/login', [AuthController::class, 'login']);
 
+// Config pubblica (senza auth)
+Route::get('/config', function () {
+    return response()->json([
+        'google_maps_key' => \App\Models\Setting::get('google_maps_key', ''),
+    ]);
+});
+
 // Rotte protette
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
