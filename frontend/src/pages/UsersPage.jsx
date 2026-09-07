@@ -203,77 +203,114 @@ export default function UsersPage() {
       {/* Modal */}
       {modal && (
         <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1050,
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1050,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem',
+          backdropFilter: 'blur(2px)',
         }} onClick={e => { if (e.target === e.currentTarget) closeModal(); }}>
           <div style={{
-            background: 'var(--mo-surface)', borderRadius: 12, padding: '2rem',
-            width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto',
-            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+            background: 'var(--mo-surface)', borderRadius: 16,
+            width: '100%', maxWidth: 580, maxHeight: '92vh',
+            display: 'flex', flexDirection: 'column',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
+            overflow: 'hidden',
           }}>
-            <div className="d-flex align-items-center justify-content-between mb-4">
-              <h2 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>
-                {modal.mode === 'create' ? 'Nuovo utente' : `Modifica: ${modal.user.name}`}
-              </h2>
-              <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem' }} onClick={closeModal}>
+            {/* Header */}
+            <div style={{
+              padding: '1.25rem 1.5rem',
+              borderBottom: '1px solid var(--mo-border)',
+              display: 'flex', alignItems: 'center', gap: '0.75rem',
+            }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10,
+                background: 'var(--mo-purple-light)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <i className="bi bi-person" style={{ color: 'var(--mo-purple)', fontSize: '1.1rem' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: '1rem' }}>
+                  {modal.mode === 'create' ? 'Nuovo utente' : `Modifica utente`}
+                </div>
+                {modal.mode === 'edit' && (
+                  <div style={{ fontSize: '0.8rem', color: 'var(--mo-text-muted)' }}>{modal.user.name}</div>
+                )}
+              </div>
+              <button className="mo-btn mo-btn-ghost" style={{ padding: '0.35rem 0.6rem' }} onClick={closeModal}>
                 <i className="bi bi-x-lg" />
               </button>
             </div>
 
-            {error && (
-              <div className="alert alert-danger mb-3" style={{ fontSize: '0.875rem' }}>{error}</div>
-            )}
+            {/* Body */}
+            <div style={{ padding: '1.5rem', overflowY: 'auto', flex: 1 }}>
+              {error && (
+                <div className="alert alert-danger mb-3" style={{ fontSize: '0.875rem' }}>{error}</div>
+              )}
 
-            <form onSubmit={handleSave}>
-              <div className="mb-3">
-                <label className="mo-label">Nome *</label>
-                <input className="mo-form-control" required value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-              </div>
-              <div className="mb-3">
-                <label className="mo-label">Email *</label>
-                <input className="mo-form-control" type="email" required value={form.email}
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
-              </div>
-              <div className="mb-3">
-                <label className="mo-label">{modal.mode === 'create' ? 'Password *' : 'Nuova password (lascia vuoto per non cambiare)'}</label>
-                <input className="mo-form-control" type="password"
-                  required={modal.mode === 'create'}
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  autoComplete="new-password" />
-              </div>
-              <div className="mb-3">
-                <label className="mo-label">Ruolo *</label>
-                <select className="mo-form-control" value={form.role}
-                  onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
-                  {Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
-                </select>
-              </div>
-              <div className="mb-3">
-                <label className="mo-label">Telefono</label>
-                <input className="mo-form-control" value={form.phone}
-                  onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
-              </div>
-              <div className="mb-3">
-                <label className="mo-label">Azienda</label>
-                <input className="mo-form-control" value={form.company}
-                  onChange={e => setForm(f => ({ ...f, company: e.target.value }))} />
-              </div>
-              <div className="mb-4">
-                <label className="d-flex align-items-center gap-2" style={{ cursor: 'pointer' }}>
-                  <input type="checkbox" checked={form.active}
-                    onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} />
-                  <span className="mo-label" style={{ margin: 0 }}>Utente attivo</span>
-                </label>
-              </div>
-              <div className="d-flex gap-2 justify-content-end">
-                <button type="button" className="mo-btn mo-btn-ghost" onClick={closeModal}>Annulla</button>
-                <button type="submit" className="mo-btn mo-btn-primary" disabled={saving}>
-                  {saving ? 'Salvataggio...' : (modal.mode === 'create' ? 'Crea utente' : 'Salva modifiche')}
-                </button>
-              </div>
-            </form>
+              <form onSubmit={handleSave} id="user-modal-form">
+                <div className="row g-3">
+                  <div className="col-md-6">
+                    <label className="mo-form-label">Nome *</label>
+                    <input className="mo-form-control" required value={form.name}
+                      onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="mo-form-label">Email *</label>
+                    <input className="mo-form-control" type="email" required value={form.email}
+                      onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="mo-form-label">
+                      {modal.mode === 'create' ? 'Password *' : 'Nuova password'}
+                    </label>
+                    <input className="mo-form-control" type="password"
+                      required={modal.mode === 'create'}
+                      placeholder={modal.mode === 'edit' ? 'Lascia vuoto per non cambiare' : ''}
+                      value={form.password}
+                      onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                      autoComplete="new-password" />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="mo-form-label">Ruolo *</label>
+                    <select className="mo-form-control" value={form.role}
+                      onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
+                      {Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                    </select>
+                  </div>
+                  <div className="col-md-6">
+                    <label className="mo-form-label">Telefono</label>
+                    <input className="mo-form-control" value={form.phone}
+                      onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
+                  </div>
+                  <div className="col-md-6">
+                    <label className="mo-form-label">Azienda</label>
+                    <input className="mo-form-control" value={form.company}
+                      onChange={e => setForm(f => ({ ...f, company: e.target.value }))} />
+                  </div>
+                  <div className="col-12">
+                    <label className="d-flex align-items-center gap-2" style={{ cursor: 'pointer' }}>
+                      <input type="checkbox" checked={form.active}
+                        onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} />
+                      <span className="mo-form-label" style={{ margin: 0 }}>Utente attivo</span>
+                    </label>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Footer */}
+            <div style={{
+              padding: '1rem 1.5rem',
+              borderTop: '1px solid var(--mo-border)',
+              display: 'flex', gap: '0.5rem', justifyContent: 'flex-end',
+              background: 'var(--mo-surface)',
+            }}>
+              <button type="button" className="mo-btn mo-btn-ghost" onClick={closeModal}>Annulla</button>
+              <button type="submit" form="user-modal-form" className="mo-btn mo-btn-primary" disabled={saving}>
+                {saving
+                  ? <><span className="spinner-border spinner-border-sm me-2" />{modal.mode === 'create' ? 'Creazione...' : 'Salvataggio...'}</>
+                  : <><i className={`bi ${modal.mode === 'create' ? 'bi-plus-lg' : 'bi-check-lg'} me-1`} />{modal.mode === 'create' ? 'Crea utente' : 'Salva modifiche'}</>}
+              </button>
+            </div>
           </div>
         </div>
       )}

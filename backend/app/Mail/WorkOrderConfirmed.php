@@ -36,6 +36,8 @@ class WorkOrderConfirmed extends Mailable
 
         $stopCarico  = $order->stops->where('tipo', 'carico')->sortBy('sequenza')->first();
         $stopScarico = $order->stops->where('tipo', 'scarico')->sortByDesc('sequenza')->first();
+        $carichi     = $order->stops->where('tipo', 'carico')->sortBy('sequenza')->values();
+        $scarichi    = $order->stops->where('tipo', 'scarico')->sortBy('sequenza')->values();
         $company     = Setting::group('company');
 
         $logoBase64 = null;
@@ -47,7 +49,7 @@ class WorkOrderConfirmed extends Mailable
         }
 
         $pdf = Pdf::loadView('pdf.work_order', compact(
-            'order', 'stopCarico', 'stopScarico', 'company', 'logoBase64', 'logoMime'
+            'order', 'stopCarico', 'stopScarico', 'carichi', 'scarichi', 'company', 'logoBase64', 'logoMime'
         ))->setPaper('a4', 'portrait');
 
         $filename = 'ordine-' . ($order->numero_ordine ?? $order->numero_tmp) . '.pdf';

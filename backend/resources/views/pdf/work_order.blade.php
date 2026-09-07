@@ -174,14 +174,20 @@
 </table>
 
 {{-- INDIRIZZO CARICO / SCARICO --}}
+@php
+  $indirizzoCarico = $carichi->map(fn($s) => trim(implode(', ', array_filter([$s->ragione_sociale, $s->indirizzo_completo]))))->filter()->implode(' — ');
+  $indirizzoScarico = $scarichi->map(fn($s) => trim(implode(', ', array_filter([$s->ragione_sociale, $s->indirizzo_completo]))))->filter()->implode(' — ');
+  if (!$indirizzoCarico) $indirizzoCarico = $stopCarico?->indirizzo_completo ?? '';
+  if (!$indirizzoScarico) $indirizzoScarico = $stopScarico?->indirizzo_completo ?? '';
+@endphp
 <table class="data-table">
   <tr>
     <th style="width:50%">Indirizzo Carico</th>
     <th style="width:50%">Indirizzo Scarico</th>
   </tr>
   <tr>
-    <td>{{ $stopCarico ? $stopCarico->indirizzo_completo : '' }}</td>
-    <td>{{ $stopScarico ? $stopScarico->indirizzo_completo : '' }}</td>
+    <td>{{ $indirizzoCarico }}</td>
+    <td>{{ $indirizzoScarico }}</td>
   </tr>
 </table>
 
@@ -195,23 +201,19 @@
     <td>
       @if($stopCarico && $stopCarico->data)
         {{ \Carbon\Carbon::parse($stopCarico->data)->format('d/m/Y') }}
-        @if($stopCarico->ora_da || $stopCarico->ora_a)
-          - {{ substr($stopCarico->ora_da ?? '', 0, 5) }}{{ ($stopCarico->ora_da && $stopCarico->ora_a) ? '-' : '' }}{{ substr($stopCarico->ora_a ?? '', 0, 5) }}
-        @endif
+        @if($stopCarico->ora_da) - {{ $stopCarico->ora_da }}@endif
       @elseif($order->data_carico)
         {{ \Carbon\Carbon::parse($order->data_carico)->format('d/m/Y') }}
-        @if($order->ora_carico) - {{ substr($order->ora_carico, 0, 5) }}@endif
+        @if($order->ora_carico) - {{ $order->ora_carico }}@endif
       @endif
     </td>
     <td>
       @if($stopScarico && $stopScarico->data)
         {{ \Carbon\Carbon::parse($stopScarico->data)->format('d/m/Y') }}
-        @if($stopScarico->ora_da || $stopScarico->ora_a)
-          - {{ substr($stopScarico->ora_da ?? '', 0, 5) }}{{ ($stopScarico->ora_da && $stopScarico->ora_a) ? '-' : '' }}{{ substr($stopScarico->ora_a ?? '', 0, 5) }}
-        @endif
+        @if($stopScarico->ora_da) - {{ $stopScarico->ora_da }}@endif
       @elseif($order->data_scarico)
         {{ \Carbon\Carbon::parse($order->data_scarico)->format('d/m/Y') }}
-        @if($order->ora_scarico) - {{ substr($order->ora_scarico, 0, 5) }}@endif
+        @if($order->ora_scarico) - {{ $order->ora_scarico }}@endif
       @endif
     </td>
   </tr>

@@ -58,17 +58,37 @@
         <td>{{ $order->data_scarico->format('d/m/Y') }}</td>
       </tr>
       @endif
-      @if($order->stops->where('tipo','carico')->first())
+      @php $carichi = $order->stops->where('tipo','carico')->sortBy('sequenza')->values(); @endphp
+      @php $scarichi = $order->stops->where('tipo','scarico')->sortBy('sequenza')->values(); @endphp
+      @if($carichi->isNotEmpty())
       <tr>
-        <td class="label">Carico</td>
-        <td>{{ $order->stops->where('tipo','carico')->sortBy('sequenza')->first()?->citta }}, {{ $order->stops->where('tipo','carico')->sortBy('sequenza')->first()?->provincia }}</td>
+        <th colspan="2" style="text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6d28d9;padding:6px 10px;background:#f3f0ff;">Tappe di carico</th>
       </tr>
+      @foreach($carichi as $i => $stop)
+      <tr>
+        <td class="label">Carico {{ $i + 1 }}</td>
+        <td>
+          @if($stop->ragione_sociale)<strong>{{ $stop->ragione_sociale }}</strong> — @endif
+          {{ $stop->citta }}{{ $stop->provincia ? ' (' . $stop->provincia . ')' : '' }}
+          @if($stop->data) <br><span style="color:#888;font-size:12px;">{{ \Carbon\Carbon::parse($stop->data)->format('d/m/Y') }}@if($stop->ora_da) &nbsp;{{ $stop->ora_da }}@endif</span>@endif
+        </td>
+      </tr>
+      @endforeach
       @endif
-      @if($order->stops->where('tipo','scarico')->last())
+      @if($scarichi->isNotEmpty())
       <tr>
-        <td class="label">Scarico</td>
-        <td>{{ $order->stops->where('tipo','scarico')->sortByDesc('sequenza')->first()?->citta }}, {{ $order->stops->where('tipo','scarico')->sortByDesc('sequenza')->first()?->provincia }}</td>
+        <th colspan="2" style="text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6d28d9;padding:6px 10px;background:#f3f0ff;">Tappe di scarico</th>
       </tr>
+      @foreach($scarichi as $i => $stop)
+      <tr>
+        <td class="label">Scarico {{ $i + 1 }}</td>
+        <td>
+          @if($stop->ragione_sociale)<strong>{{ $stop->ragione_sociale }}</strong> — @endif
+          {{ $stop->citta }}{{ $stop->provincia ? ' (' . $stop->provincia . ')' : '' }}
+          @if($stop->data) <br><span style="color:#888;font-size:12px;">{{ \Carbon\Carbon::parse($stop->data)->format('d/m/Y') }}@if($stop->ora_da) &nbsp;{{ $stop->ora_da }}@endif</span>@endif
+        </td>
+      </tr>
+      @endforeach
       @endif
       @if($order->annotazioni_mail)
       <tr>

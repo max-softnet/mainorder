@@ -10,7 +10,7 @@ import usePageTitle from '../hooks/usePageTitle';
 const EMPTY = {
   data_ordine: new Date().toISOString().slice(0, 10),
   cliente_id: '', carrier_id: '',
-  data_carico: '', ora_carico: '', data_scarico: '', ora_scarico: '',
+  data_carico: '', ora_carico: '8-16', data_scarico: '', ora_scarico: '8-16',
   prezzo_cliente: '', supplemento_cliente: '',
   costo_trasportatore: '', supplemento_trasportatore: '',
   vehicle_type_id: '', n_bancali: '', tipologia_merce: '',
@@ -94,19 +94,20 @@ export default function WorkOrderFormPage() {
     setCarrierContacts(data);
   };
 
-  // Ricalcola supplemento cliente quando cambia cliente o numero tappe
-  useEffect(() => {
-    if (!form.cliente_id || clients.length === 0) return;
-    const cliente = clients.find(c => c.id === parseInt(form.cliente_id));
-    if (!cliente) return;
-    const suppCarico  = parseFloat(cliente.supplemento_carico  || 0);
-    const suppScarico = parseFloat(cliente.supplemento_scarico || 0);
-    if (suppCarico === 0 && suppScarico === 0) return;
+  const ricalcolaSupplementi = () => {
     const nCarichi  = stops.filter(s => s.tipo === 'carico').length;
     const nScarichi = stops.filter(s => s.tipo === 'scarico').length;
-    const totale = (suppCarico * nCarichi) + (suppScarico * nScarichi);
-    setForm(f => ({ ...f, supplemento_cliente: totale > 0 ? totale.toFixed(2) : '' }));
-  }, [form.cliente_id, stops, clients]);
+    const extraTappe = Math.max(0, (nCarichi - 1) + (nScarichi - 1));
+
+    const prezzoCl = parseFloat(form.prezzo_cliente) || 0;
+    const costoTr  = parseFloat(form.costo_trasportatore) || 0;
+
+    setForm(f => ({
+      ...f,
+      supplemento_cliente:      prezzoCl > 0 ? (extraTappe * prezzoCl).toFixed(2) : f.supplemento_cliente,
+      supplemento_trasportatore: costoTr  > 0 ? (extraTappe * costoTr).toFixed(2)  : f.supplemento_trasportatore,
+    }));
+  };
 
   // Suggerimento tratta quando cambiano cliente, trasportatore e province
   const fetchSuggestion = useCallback(async (clienteId, carrierId, stopsData) => {
@@ -226,6 +227,10 @@ export default function WorkOrderFormPage() {
           alert('Seleziona almeno un referente del trasportatore a cui inviare la conferma d\'ordine.');
         }
         document.getElementById('carrier-contacts-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+      if (!form.data_carico || !form.data_scarico) {
+        alert('Inserisci la data di carico e la data di scarico prima di confermare l\'ordine.');
         return;
       }
     }
@@ -474,8 +479,16 @@ export default function WorkOrderFormPage() {
             {/* Cliente */}
             <div className="col-12">
               <div className="p-3" style={{ background: '#f0fdf4', borderRadius: '10px', border: '1px solid #bbf7d0' }}>
-                <div className="mb-2" style={{ fontSize: '0.85rem', fontWeight: 600, color: '#065f46' }}>
-                  <i className="bi bi-building me-1" />Prezzo cliente
+                <div className="mb-2 d-flex align-items-center justify-content-between">
+                  <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#065f46' }}>
+                    <i className="bi bi-building me-1" />Prezzo cliente
+                  </span>
+                  <button type="button" className="mo-btn mo-btn-ghost"
+                    style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem' }}
+                    title={`Tappe extra: ${Math.max(0, stops.filter(s=>s.tipo==='carico').length - 1 + stops.filter(s=>s.tipo==='scarico').length - 1)}`}
+                    onClick={ricalcolaSupplementi}>
+                    <i className="bi bi-arrow-repeat me-1" />Ricalcola supplementi
+                  </button>
                 </div>
                 <div className="row g-2">
                   <div className="col-md-4">
