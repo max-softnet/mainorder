@@ -144,8 +144,8 @@ export default function AddressAutocomplete({
     if (text.length < 3) { setSuggestions([]); return; }
     try {
       const { suggestions: preds } = await window.google.maps.places.AutocompleteSuggestion
-        .fetchAutocompleteSuggestions({ input: text, includedRegionCodes: ['it'], language: 'it' });
-      setSuggestions((preds || []).map(p => ({ _type: 'google', _pred: p })));
+        .fetchAutocompleteSuggestions({ input: text, includedRegionCodes: ['it', 'fr', 'ch', 'at', 'si', 'sm', 'va', 'es'], language: 'it' });
+      setSuggestions((preds || []).filter(p => p.placePrediction).map(p => ({ _type: 'google', _pred: p.placePrediction })));
       setOpen(true);
       setActiveIdx(-1);
     } catch (_) {

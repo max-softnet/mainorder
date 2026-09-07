@@ -138,21 +138,6 @@ function StopCard({ stop, idx, colIdx, totalInCol, totalStops, onUpdate, onUpdat
             </div>
           </div>
         )}
-        <div className="col-6">
-          <label className="mo-form-label">Data</label>
-          <input className="mo-form-control" type="date" value={stop.data ?? ''}
-            onChange={e => onUpdate(idx, 'data', e.target.value)} />
-        </div>
-        <div className="col-3">
-          <label className="mo-form-label">Dalle</label>
-          <input className="mo-form-control" type="time" value={stop.ora_da ?? ''}
-            onChange={e => onUpdate(idx, 'ora_da', e.target.value)} />
-        </div>
-        <div className="col-3">
-          <label className="mo-form-label">Alle</label>
-          <input className="mo-form-control" type="time" value={stop.ora_a ?? ''}
-            onChange={e => onUpdate(idx, 'ora_a', e.target.value)} />
-        </div>
         <div className="col-12">
           <label className="mo-form-label">Note tappa</label>
           <input className="mo-form-control" value={stop.note ?? ''}

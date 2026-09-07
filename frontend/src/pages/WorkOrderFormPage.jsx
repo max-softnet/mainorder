@@ -228,11 +228,6 @@ export default function WorkOrderFormPage() {
         document.getElementById('carrier-contacts-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
-      if (!form.data_carico || !form.data_scarico) {
-        alert('Inserisci la data di carico e la data di scarico prima di confermare l\'ordine.');
-        document.querySelector('[name="data_carico"], input[type="date"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
     }
     if (!validateStops()) return;
     if (!confirm(`Portare l'ordine in stato "${STATUS_LABELS[newStatus]}"?`)) return;
