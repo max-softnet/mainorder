@@ -17,6 +17,7 @@ import StatisticsPage from './pages/StatisticsPage';
 import RoutesPage from './pages/RoutesPage';
 import BillingPage from './pages/BillingPage';
 import UsersPage from './pages/UsersPage';
+import MailLogsPage from './pages/MailLogsPage';
 
 export default function App() {
   return (
@@ -56,6 +57,7 @@ export default function App() {
 
           {/* Utenti (solo admin) */}
           <Route path="/users" element={<PrivateRoute roles={['admin']}><UsersPage /></PrivateRoute>} />
+          <Route path="/mail-logs" element={<PrivateRoute roles={['admin']}><MailLogsPage /></PrivateRoute>} />
 
           {/* Impostazioni (solo admin) */}
           <Route path="/settings" element={<PrivateRoute roles={['admin']}><SettingsPage /></PrivateRoute>} />

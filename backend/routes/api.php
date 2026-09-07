@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\WorkOrderController;
 use App\Http\Controllers\Api\WorkOrderDocumentController;
 use App\Http\Controllers\Api\WorkOrderPdfController;
 use App\Http\Controllers\Api\BillingController;
+use App\Http\Controllers\Api\MailLogController;
 use App\Http\Controllers\Api\StatisticsController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,6 +44,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('work-orders/prepare', [WorkOrderController::class, 'prepareData']);
     Route::apiResource('work-orders', WorkOrderController::class);
     Route::get('work-orders/{workOrder}/pdf', [WorkOrderPdfController::class, 'download']);
+    Route::post('work-orders/{workOrder}/resend-email', [WorkOrderController::class, 'resendEmail']);
     Route::get('work-orders/{workOrder}/documents', [WorkOrderDocumentController::class, 'index']);
     Route::post('work-orders/{workOrder}/documents', [WorkOrderDocumentController::class, 'store']);
     Route::get('work-orders/{workOrder}/documents/{document}/download', [WorkOrderDocumentController::class, 'download']);
@@ -75,6 +77,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('settings/logo', [SettingController::class, 'getLogo']);
     Route::post('settings/logo', [SettingController::class, 'uploadLogo']);
     Route::delete('settings/logo', [SettingController::class, 'deleteLogo']);
+
+    // Log email (solo admin)
+    Route::get('mail-logs', [MailLogController::class, 'index']);
 
     // Utenti (solo admin)
     Route::apiResource('users', UserController::class);

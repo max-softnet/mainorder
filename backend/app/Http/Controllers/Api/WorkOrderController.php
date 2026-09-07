@@ -7,6 +7,7 @@ use App\Mail\WorkOrderConfirmed;
 use App\Models\Client;
 use App\Models\ClientRoute;
 use App\Models\CarrierRoute;
+use App\Models\MailLog;
 use App\Models\Setting;
 use App\Models\WorkOrder;
 use App\Models\WorkOrderUpdate;
@@ -117,22 +118,8 @@ class WorkOrderController extends Controller
             unset($data['status']);
 
             // Invio email con PDF allegato
-            try {
-                Setting::applySmtp();
-                $workOrder->load(['cliente', 'carrier', 'vehicleType', 'stops']);
-                $mailable = new WorkOrderConfirmed($workOrder);
-
-                // Al mittente (utente che conferma)
-                Mail::to($user->email)->send($mailable);
-
-                // Ai contatti del trasportatore
-                $emailsContatti = $contacts->pluck('email')->filter()->values();
-                if ($emailsContatti->isNotEmpty()) {
-                    Mail::to($emailsContatti->toArray())->send(new WorkOrderConfirmed($workOrder));
-                }
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Invio mail ordine fallito: ' . $e->getMessage());
-            }
+            $workOrder->load(['cliente', 'carrier', 'vehicleType', 'stops']);
+            $this->sendConfirmationMail($workOrder, $user, $contacts->pluck('email')->filter()->values(), 'conferma_ordine');
         }
 
         // Traccia altri cambi stato
@@ -325,8 +312,8 @@ class WorkOrderController extends Controller
             'stops.*.lng'              => 'nullable|numeric',
             'stops.*.place_id'         => 'nullable|string',
             'stops.*.data'             => 'nullable|date',
-            'stops.*.ora_da'           => 'nullable|date_format:H:i',
-            'stops.*.ora_a'            => 'nullable|date_format:H:i',
+            'stops.*.ora_da'           => 'nullable|string|max:20',
+            'stops.*.ora_a'            => 'nullable|string|max:20',
             'stops.*.note'             => 'nullable|string',
             'stops.*.km_da_precedente' => 'nullable|numeric',
         ]);
@@ -339,6 +326,56 @@ class WorkOrderController extends Controller
             'stops', 'documents.uploader', 'carrierContacts',
             'updates.user',
         ]);
+    }
+
+    public function resendEmail(Request $request, WorkOrder $workOrder): \Illuminate\Http\JsonResponse
+    {
+        $this->authorizeAdminOrOperatore($request);
+
+        if ($workOrder->status !== 'confermato') {
+            return response()->json(['message' => 'Il reinvio è disponibile solo per ordini confermati.'], 422);
+        }
+
+        $workOrder->load(['cliente', 'carrier', 'vehicleType', 'stops']);
+        $contacts = $workOrder->carrierContacts()->get();
+        $error = $this->sendConfirmationMail($workOrder, $request->user(), $contacts->pluck('email')->filter()->values(), 'reinvio');
+
+        if ($error) {
+            return response()->json(['message' => 'Errore durante il reinvio: ' . $error], 500);
+        }
+        return response()->json(['message' => 'Email reinviata correttamente.']);
+    }
+
+    private function sendConfirmationMail(WorkOrder $workOrder, $user, $emailsContatti, string $tipo): ?string
+    {
+        $destinatari = collect([$user->email])->merge($emailsContatti)->unique()->implode(', ');
+        try {
+            Setting::applySmtp();
+            $mailable = new WorkOrderConfirmed($workOrder);
+            Mail::to($user->email)->send($mailable);
+            if ($emailsContatti->isNotEmpty()) {
+                Mail::to($emailsContatti->toArray())->send(new WorkOrderConfirmed($workOrder));
+            }
+            MailLog::create([
+                'work_order_id' => $workOrder->id,
+                'tipo'          => $tipo,
+                'destinatari'   => $destinatari,
+                'stato'         => 'inviata',
+                'inviata_da'    => $user->id,
+            ]);
+            return null;
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Invio mail ordine fallito: ' . $e->getMessage());
+            MailLog::create([
+                'work_order_id' => $workOrder->id,
+                'tipo'          => $tipo,
+                'destinatari'   => $destinatari,
+                'stato'         => 'errore',
+                'errore'        => $e->getMessage(),
+                'inviata_da'    => $user->id,
+            ]);
+            return $e->getMessage();
+        }
     }
 
     private function authorizeAdminOrOperatore(Request $request): void

@@ -137,6 +137,19 @@ export default function WorkOrderViewPage() {
     }
   };
 
+  const handleResendEmail = async () => {
+    if (!confirm('Reinviare la mail di conferma ordine?')) return;
+    setSaving(true);
+    try {
+      const { data } = await api.post(`/work-orders/${id}/resend-email`);
+      alert(data.message);
+    } catch (err) {
+      alert('Errore nel reinvio: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDownloadPdf = async () => {
     try {
       const response = await api.get(`/work-orders/${id}/pdf`, { responseType: 'blob' });
@@ -185,6 +198,11 @@ export default function WorkOrderViewPage() {
           {canEdit && (
             <button className="mo-btn mo-btn-outline" onClick={handleDownloadPdf}>
               <i className="bi bi-file-earmark-pdf me-1" /> Scarica PDF
+            </button>
+          )}
+          {canEdit && order.status === 'confermato' && (
+            <button className="mo-btn mo-btn-outline" disabled={saving} onClick={handleResendEmail}>
+              <i className="bi bi-envelope-arrow-up me-1" /> Reinvia mail
             </button>
           )}
           {canEdit && STATUS_TRANSITIONS[order.status]?.map(s => (
