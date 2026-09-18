@@ -97,16 +97,26 @@ export default function WorkOrderFormPage() {
   const ricalcolaSupplementi = () => {
     const nCarichi  = stops.filter(s => s.tipo === 'carico').length;
     const nScarichi = stops.filter(s => s.tipo === 'scarico').length;
-    const extraTappe = Math.max(0, (nCarichi - 1) + (nScarichi - 1));
+    const extraCarichi  = Math.max(0, nCarichi - 1);
+    const extraScarichi = Math.max(0, nScarichi - 1);
 
-    const prezzoCl = parseFloat(form.prezzo_cliente) || 0;
-    const costoTr  = parseFloat(form.costo_trasportatore) || 0;
+    // Supplemento cliente: usa le tariffe supplemento del cliente
+    const cliente = clients.find(c => c.id === parseInt(form.cliente_id));
+    if (cliente) {
+      const suppCarico  = parseFloat(cliente.supplemento_carico  || 0);
+      const suppScarico = parseFloat(cliente.supplemento_scarico || 0);
+      const totCl = (extraCarichi * suppCarico) + (extraScarichi * suppScarico);
+      setForm(f => ({ ...f, supplemento_cliente: totCl > 0 ? totCl.toFixed(2) : '' }));
+    }
 
-    setForm(f => ({
-      ...f,
-      supplemento_cliente:       prezzoCl > 0 ? (extraTappe > 0 ? (extraTappe * prezzoCl).toFixed(2) : '') : f.supplemento_cliente,
-      supplemento_trasportatore: costoTr  > 0 ? (extraTappe > 0 ? (extraTappe * costoTr).toFixed(2)  : '') : f.supplemento_trasportatore,
-    }));
+    // Supplemento trasportatore: usa le tariffe supplemento del trasportatore
+    const carrier = carriers.find(c => c.id === parseInt(form.carrier_id));
+    if (carrier) {
+      const suppCarico  = parseFloat(carrier.supplemento_carico  || 0);
+      const suppScarico = parseFloat(carrier.supplemento_scarico || 0);
+      const totTr = (extraCarichi * suppCarico) + (extraScarichi * suppScarico);
+      setForm(f => ({ ...f, supplemento_trasportatore: totTr > 0 ? totTr.toFixed(2) : '' }));
+    }
   };
 
   // Suggerimento tratta quando cambiano cliente, trasportatore e province
@@ -128,8 +138,15 @@ export default function WorkOrderFormPage() {
         },
       });
       if (data.route_suggestion) {
+        const s = data.route_suggestion;
+        setForm(f => ({
+          ...f,
+          ...(s.prezzo_cliente != null      && { prezzo_cliente:      s.prezzo_cliente }),
+          ...(s.costo_trasportatore != null && { costo_trasportatore: s.costo_trasportatore }),
+          ...(s.km_totali != null           && { km_totali:           s.km_totali }),
+        }));
         setRouteSuggestion(data.route_suggestion);
-        setSuggestionAccepted(false);
+        setSuggestionAccepted(true);
       } else {
         setRouteSuggestion(null);
       }
@@ -446,13 +463,13 @@ export default function WorkOrderFormPage() {
           </div>
         </div>
 
-        {/* Suggerimento tratta */}
-        {routeSuggestion && !suggestionAccepted && (
+        {/* Suggerimento tratta applicato automaticamente */}
+        {routeSuggestion && suggestionAccepted && (
           <div className="mb-3 p-3 d-flex align-items-center justify-content-between flex-wrap gap-2"
             style={{ background: '#ede9fe', borderRadius: '12px', border: '1.5px solid #c4b5fd' }}>
             <div>
               <div style={{ fontWeight: 600, color: '#5b21b6', fontSize: '0.9rem' }}>
-                <i className="bi bi-stars me-2" />Tratta già effettuata — suggerimento prezzi disponibile
+                <i className="bi bi-stars me-2" />Tratta già effettuata — prezzi applicati automaticamente
               </div>
               <div className="mo-text-muted mt-1" style={{ fontSize: '0.82rem' }}>
                 {routeSuggestion.prezzo_cliente && <>Prezzo cliente: <strong>€{routeSuggestion.prezzo_cliente}</strong> &nbsp;·&nbsp;</>}
@@ -461,14 +478,9 @@ export default function WorkOrderFormPage() {
                 Usato il: <strong>{routeSuggestion.last_used}</strong>
               </div>
             </div>
-            <div className="d-flex gap-2">
-              <button type="button" className="mo-btn mo-btn-primary" style={{ fontSize: '0.85rem' }} onClick={acceptSuggestion}>
-                <i className="bi bi-check-lg me-1" />Applica
-              </button>
-              <button type="button" className="mo-btn mo-btn-ghost" style={{ fontSize: '0.85rem' }} onClick={() => setRouteSuggestion(null)}>
-                Ignora
-              </button>
-            </div>
+            <button type="button" className="mo-btn mo-btn-ghost" style={{ fontSize: '0.85rem' }} onClick={() => setRouteSuggestion(null)}>
+              <i className="bi bi-x" />
+            </button>
           </div>
         )}
 
