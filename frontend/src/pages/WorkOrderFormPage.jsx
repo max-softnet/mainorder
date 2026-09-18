@@ -104,8 +104,8 @@ export default function WorkOrderFormPage() {
 
     setForm(f => ({
       ...f,
-      supplemento_cliente:      prezzoCl > 0 ? (extraTappe * prezzoCl).toFixed(2) : f.supplemento_cliente,
-      supplemento_trasportatore: costoTr  > 0 ? (extraTappe * costoTr).toFixed(2)  : f.supplemento_trasportatore,
+      supplemento_cliente:       prezzoCl > 0 ? (extraTappe > 0 ? (extraTappe * prezzoCl).toFixed(2) : '') : f.supplemento_cliente,
+      supplemento_trasportatore: costoTr  > 0 ? (extraTappe > 0 ? (extraTappe * costoTr).toFixed(2)  : '') : f.supplemento_trasportatore,
     }));
   };
 
