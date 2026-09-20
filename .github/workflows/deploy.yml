@@ -23,33 +23,49 @@ jobs:
         working-directory: frontend
         run: npm ci && npm run build
 
-      - name: Upload frontend dist
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ssh.francescod131.sg-host.com
-          port: 18765
-          username: u2519-pn6yuccwnuam
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: "frontend/dist/*"
-          target: ~/mainorder/backend/public/
-          strip_components: 2
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p 18765 ssh.francescod131.sg-host.com >> ~/.ssh/known_hosts 2>/dev/null || true
 
-      - name: Deploy backend via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ssh.francescod131.sg-host.com
-          port: 18765
-          username: u2519-pn6yuccwnuam
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          command_timeout: 120s
-          script: |
-            cd ~/mainorder
-            git pull origin main
-            cd backend
-            php artisan migrate --force
-            php artisan config:clear
-            php artisan cache:clear
-            php artisan view:clear
-            echo "Deploy completato"
+      - name: Upload and deploy
+        env:
+          SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
+        run: |
+          # Crea tar del dist
+          tar -czf /tmp/frontend-dist.tar.gz -C frontend/dist .
+
+          # Trasferisci via scp con sshpass
+          sshpass -p "$SSH_PASSPHRASE" scp \
+            -i ~/.ssh/deploy_key \
+            -P 18765 \
+            -o StrictHostKeyChecking=no \
+            -o PreferredAuthentications=publickey \
+            /tmp/frontend-dist.tar.gz \
+            u2519-pn6yuccwnuam@ssh.francescod131.sg-host.com:/tmp/frontend-dist.tar.gz
+
+          # Estrai sul server + git pull + migrate
+          sshpass -p "$SSH_PASSPHRASE" ssh \
+            -i ~/.ssh/deploy_key \
+            -p 18765 \
+            -o StrictHostKeyChecking=no \
+            -o PreferredAuthentications=publickey \
+            u2519-pn6yuccwnuam@ssh.francescod131.sg-host.com '
+              set -e
+              echo "=== Estrazione frontend ==="
+              mkdir -p ~/mainorder/backend/public
+              tar -xzf /tmp/frontend-dist.tar.gz -C ~/mainorder/backend/public/
+              rm -f /tmp/frontend-dist.tar.gz
+              echo "=== Git pull backend ==="
+              cd ~/mainorder
+              git pull origin main
+              cd backend
+              echo "=== Migrate e cache ==="
+              php artisan migrate --force
+              php artisan config:clear
+              php artisan cache:clear
+              php artisan view:clear
+              echo "=== Deploy completato ==="
+            '
