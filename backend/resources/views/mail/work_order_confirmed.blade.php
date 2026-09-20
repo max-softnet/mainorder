@@ -14,7 +14,9 @@
   .table th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6d28d9; padding: 6px 10px; background: #f3f0ff; }
   .table td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
   .table tr:last-child td { border-bottom: none; }
-  .label { color: #888; font-size: 12px; }
+  .label { color: #888; font-size: 12px; width: 130px; }
+  .badge-carico  { display:inline-block; background:#dcfce7; color:#166534; padding:1px 8px; border-radius:12px; font-size:11px; font-weight:600; margin-right:6px; }
+  .badge-scarico { display:inline-block; background:#fef9c3; color:#854d0e; padding:1px 8px; border-radius:12px; font-size:11px; font-weight:600; margin-right:6px; }
   .footer { padding: 18px 32px; background: #f9f9f9; font-size: 12px; color: #999; border-top: 1px solid #eee; }
   .badge { display: inline-block; background: #d1fae5; color: #065f46; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
 </style>
@@ -22,7 +24,7 @@
 <body>
 <div class="wrap">
   <div class="header">
-    <h1>Ordine confermato</h1>
+    <h1>Ordine di trasporto</h1>
     <p>N° {{ $order->numero_ordine ?? $order->numero_tmp }} &mdash; {{ now()->format('d/m/Y') }}</p>
   </div>
   <div class="body">
@@ -38,65 +40,52 @@
         <td class="label">Data ordine</td>
         <td>{{ $order->data_ordine?->format('d/m/Y') ?? '—' }}</td>
       </tr>
-      <tr>
-        <td class="label">Cliente</td>
-        <td>{{ $order->cliente?->ragione_sociale ?? '—' }}</td>
-      </tr>
-      <tr>
-        <td class="label">Trasportatore</td>
-        <td>{{ $order->carrier?->denominazione ?? '—' }}</td>
-      </tr>
       @if($order->data_carico)
       <tr>
         <td class="label">Data carico</td>
-        <td>{{ $order->data_carico->format('d/m/Y') }}</td>
+        <td>{{ $order->data_carico->format('d/m/Y') }}@if($order->ora_carico) &nbsp;·&nbsp; {{ $order->ora_carico }}@endif</td>
       </tr>
       @endif
       @if($order->data_scarico)
       <tr>
         <td class="label">Data scarico</td>
-        <td>{{ $order->data_scarico->format('d/m/Y') }}</td>
-      </tr>
-      @endif
-      @php $carichi = $order->stops->where('tipo','carico')->sortBy('sequenza')->values(); @endphp
-      @php $scarichi = $order->stops->where('tipo','scarico')->sortBy('sequenza')->values(); @endphp
-      @if($carichi->isNotEmpty())
-      <tr>
-        <th colspan="2" style="text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6d28d9;padding:6px 10px;background:#f3f0ff;">Tappe di carico</th>
-      </tr>
-      @foreach($carichi as $i => $stop)
-      <tr>
-        <td class="label">Carico {{ $i + 1 }}</td>
-        <td>
-          @if($stop->ragione_sociale)<strong>{{ $stop->ragione_sociale }}</strong> — @endif
-          {{ $stop->citta }}{{ $stop->provincia ? ' (' . $stop->provincia . ')' : '' }}
-          @if($stop->data) <br><span style="color:#888;font-size:12px;">{{ \Carbon\Carbon::parse($stop->data)->format('d/m/Y') }}@if($stop->ora_da) &nbsp;{{ $stop->ora_da }}@endif</span>@endif
-        </td>
-      </tr>
-      @endforeach
-      @endif
-      @if($scarichi->isNotEmpty())
-      <tr>
-        <th colspan="2" style="text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6d28d9;padding:6px 10px;background:#f3f0ff;">Tappe di scarico</th>
-      </tr>
-      @foreach($scarichi as $i => $stop)
-      <tr>
-        <td class="label">Scarico {{ $i + 1 }}</td>
-        <td>
-          @if($stop->ragione_sociale)<strong>{{ $stop->ragione_sociale }}</strong> — @endif
-          {{ $stop->citta }}{{ $stop->provincia ? ' (' . $stop->provincia . ')' : '' }}
-          @if($stop->data) <br><span style="color:#888;font-size:12px;">{{ \Carbon\Carbon::parse($stop->data)->format('d/m/Y') }}@if($stop->ora_da) &nbsp;{{ $stop->ora_da }}@endif</span>@endif
-        </td>
-      </tr>
-      @endforeach
-      @endif
-      @if($order->annotazioni_mail)
-      <tr>
-        <td class="label">Note</td>
-        <td>{{ $order->annotazioni_mail }}</td>
+        <td>{{ $order->data_scarico->format('d/m/Y') }}@if($order->ora_scarico) &nbsp;·&nbsp; {{ $order->ora_scarico }}@endif</td>
       </tr>
       @endif
     </table>
+
+    {{-- Tappe in sequenza ordine --}}
+    @php $allStops = $order->stops->sortBy('sequenza')->values(); @endphp
+    @if($allStops->isNotEmpty())
+    <table class="table">
+      <tr><th colspan="2">Tappe</th></tr>
+      @foreach($allStops as $stop)
+      <tr>
+        <td class="label" style="vertical-align:top; padding-top:10px;">
+          <span class="{{ $stop->tipo === 'carico' ? 'badge-carico' : 'badge-scarico' }}">
+            {{ $stop->tipo === 'carico' ? 'Carico' : 'Scarico' }}
+          </span>
+        </td>
+        <td>
+          @if($stop->ragione_sociale)<strong>{{ $stop->ragione_sociale }}</strong><br>@endif
+          {{ $stop->indirizzo_completo ?? ($stop->citta . ($stop->provincia ? ' (' . $stop->provincia . ')' : '')) }}
+          @if($stop->note_tappa)
+            <br><span style="color:#888; font-size:12px;">{{ $stop->note_tappa }}</span>
+          @endif
+        </td>
+      </tr>
+      @endforeach
+    </table>
+    @endif
+
+    @if($order->annotazioni_mail || $order->annotazioni)
+    <table class="table">
+      <tr><th colspan="2">Note</th></tr>
+      <tr>
+        <td colspan="2">{{ $order->annotazioni_mail ?: $order->annotazioni }}</td>
+      </tr>
+    </table>
+    @endif
 
     <p style="margin-top:20px;">
       <span class="badge">✓ Confermato</span>

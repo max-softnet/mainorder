@@ -54,6 +54,24 @@ export default function WorkOrdersPage() {
     fetchOrders();
   };
 
+  const handleClone = async (id) => {
+    const { data } = await api.get(`/work-orders/${id}`);
+    const { stops: rawStops, carrier_contacts: cc, documents, numero_ordine, numero_tmp, status, ...rest } = data;
+    const DATE_FIELDS = ['data_ordine', 'data_carico', 'data_scarico'];
+    DATE_FIELDS.forEach(f => { if (rest[f]) rest[f] = rest[f].slice(0, 10); });
+    const cloneForm = {
+      ...rest,
+      data_ordine: new Date().toISOString().slice(0, 10),
+      carrier_contact_ids: cc?.map(c => c.id) || [],
+    };
+    const cloneStops = (rawStops || []).map(({ id: _id, work_order_id, created_at, updated_at, ...s }) => ({
+      ...s,
+      data: s.data ? s.data.slice(0, 10) : '',
+      _tmpId: Math.random().toString(36).slice(2),
+    }));
+    navigate('/work-orders/new', { state: { clone: { form: cloneForm, stops: cloneStops } } });
+  };
+
   const canWrite = user?.role === 'admin' || user?.role === 'operatore';
 
   return (
@@ -167,12 +185,17 @@ export default function WorkOrdersPage() {
                         onClick={() => navigate(`/work-orders/${o.id}`)}>
                         <i className="bi bi-eye" />
                       </button>
-                      {canWrite && (
+                      {canWrite && (<>
                         <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem' }}
                           onClick={() => navigate(`/work-orders/${o.id}/edit`)}>
                           <i className="bi bi-pencil" />
                         </button>
-                      )}
+                        <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem' }}
+                          title="Clona ordine"
+                          onClick={() => handleClone(o.id)}>
+                          <i className="bi bi-copy" />
+                        </button>
+                      </>)}
                       {user?.role === 'admin' && (
                         <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem', color: '#ef4444' }}
                           onClick={() => handleDelete(o.id)}>

@@ -22,7 +22,7 @@ const TYPE_ICONS = {
 
 // Ordine dei campi all'interno di ciascun gruppo
 const FIELD_ORDER = {
-  general: ['app_name', 'google_maps_key'],
+  general: ['app_name', 'google_maps_key', 'maps_countries'],
   company: [
     'company_name', 'company_piva',
     'company_address', 'company_city',
@@ -344,6 +344,50 @@ export default function SettingsPage() {
   );
 }
 
+const COUNTRY_OPTIONS = [
+  { code: 'it', label: '🇮🇹 Italia' },
+  { code: 'fr', label: '🇫🇷 Francia' },
+  { code: 'ch', label: '🇨🇭 Svizzera' },
+  { code: 'at', label: '🇦🇹 Austria' },
+  { code: 'si', label: '🇸🇮 Slovenia' },
+  { code: 'hr', label: '🇭🇷 Croazia' },
+  { code: 'de', label: '🇩🇪 Germania' },
+  { code: 'es', label: '🇪🇸 Spagna' },
+  { code: 'pt', label: '🇵🇹 Portogallo' },
+  { code: 'nl', label: '🇳🇱 Olanda' },
+  { code: 'be', label: '🇧🇪 Belgio' },
+  { code: 'pl', label: '🇵🇱 Polonia' },
+  { code: 'sm', label: '🇸🇲 San Marino' },
+  { code: 'va', label: '🇻🇦 Vaticano' },
+];
+
+function MapsCountriesField({ value, onChange }) {
+  const selected = (value || '').split(',').map(s => s.trim()).filter(Boolean);
+  const toggle = (code) => {
+    const next = selected.includes(code)
+      ? selected.filter(c => c !== code)
+      : [...selected, code];
+    onChange(next.join(','));
+  };
+  return (
+    <div className="d-flex flex-wrap gap-2 mt-1">
+      {COUNTRY_OPTIONS.map(({ code, label }) => (
+        <label key={code} style={{
+          display: 'flex', alignItems: 'center', gap: '0.3rem',
+          cursor: 'pointer', userSelect: 'none',
+          padding: '0.25rem 0.6rem', borderRadius: '8px',
+          border: `1px solid ${selected.includes(code) ? 'var(--mo-purple)' : 'var(--mo-border)'}`,
+          background: selected.includes(code) ? 'var(--mo-purple-light)' : 'transparent',
+          fontSize: '0.85rem',
+        }}>
+          <input type="checkbox" checked={selected.includes(code)} onChange={() => toggle(code)} style={{ display: 'none' }} />
+          {label}
+        </label>
+      ))}
+    </div>
+  );
+}
+
 function SettingField({ setting, onChange }) {
   const [showPwd, setShowPwd] = useState(false);
   const isPassword  = setting.type === 'password';
@@ -384,6 +428,8 @@ function SettingField({ setting, onChange }) {
           value={setting.value}
           onChange={e => onChange(e.target.value)}
         />
+      ) : setting.key === 'maps_countries' ? (
+        <MapsCountriesField value={setting.value} onChange={onChange} />
       ) : setting.key === 'smtp_encryption' ? (
         <select className="mo-form-control form-select" value={setting.value} onChange={e => onChange(e.target.value)}>
           <option value="tls">TLS (porta 587)</option>

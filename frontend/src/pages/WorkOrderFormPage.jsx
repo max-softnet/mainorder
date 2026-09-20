@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Layout from '../components/Layout';
 import OrderStops from '../components/OrderStops';
 import OrderDocuments from '../components/OrderDocuments';
@@ -37,10 +37,12 @@ const STATUS_TRANSITIONS = {
 export default function WorkOrderFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const isEdit = Boolean(id);
+  const cloneData = !isEdit ? (location.state?.clone ?? null) : null;
 
-  const [form, setForm] = useState(EMPTY);
-  const [stops, setStops] = useState([]);
+  const [form, setForm] = useState(cloneData ? { ...EMPTY, ...cloneData.form } : EMPTY);
+  const [stops, setStops] = useState(cloneData ? cloneData.stops : []);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
@@ -64,6 +66,8 @@ export default function WorkOrderFormPage() {
       setClients(c.data.data || c.data);
       setCarriers(car.data.data || car.data);
       setVehicleTypes(vt.data);
+      // Se stiamo clonando, carica subito i referenti del trasportatore
+      if (cloneData?.form?.carrier_id) loadCarrierContacts(cloneData.form.carrier_id);
     });
   }, []);
 
@@ -100,24 +104,28 @@ export default function WorkOrderFormPage() {
     const extraCarichi  = Math.max(0, nCarichi - 1);
     const extraScarichi = Math.max(0, nScarichi - 1);
 
-    // Supplemento cliente: usa le tariffe supplemento del cliente
     const cliente = clients.find(c => c.id === parseInt(form.cliente_id));
-    if (cliente) {
-      const suppCarico  = parseFloat(cliente.supplemento_carico  || 0);
-      const suppScarico = parseFloat(cliente.supplemento_scarico || 0);
-      const totCl = (extraCarichi * suppCarico) + (extraScarichi * suppScarico);
-      setForm(f => ({ ...f, supplemento_cliente: totCl > 0 ? totCl.toFixed(2) : '' }));
-    }
+    if (!cliente) return;
 
-    // Supplemento trasportatore: usa le tariffe supplemento del trasportatore
-    const carrier = carriers.find(c => c.id === parseInt(form.carrier_id));
-    if (carrier) {
-      const suppCarico  = parseFloat(carrier.supplemento_carico  || 0);
-      const suppScarico = parseFloat(carrier.supplemento_scarico || 0);
-      const totTr = (extraCarichi * suppCarico) + (extraScarichi * suppScarico);
-      setForm(f => ({ ...f, supplemento_trasportatore: totTr > 0 ? totTr.toFixed(2) : '' }));
-    }
+    const suppCarico  = parseFloat(cliente.supplemento_carico  || 0);
+    const suppScarico = parseFloat(cliente.supplemento_scarico || 0);
+    const totCl = (extraCarichi * suppCarico) + (extraScarichi * suppScarico);
+    setForm(f => ({ ...f, supplemento_cliente: totCl > 0 ? totCl.toFixed(2) : '' }));
   };
+
+  // Ricalcola supplemento cliente automaticamente quando cambiano tappe o cliente
+  useEffect(() => {
+    const cliente = clients.find(c => c.id === parseInt(form.cliente_id));
+    if (!cliente) return;
+    const nCarichi  = stops.filter(s => s.tipo === 'carico').length;
+    const nScarichi = stops.filter(s => s.tipo === 'scarico').length;
+    const extraCarichi  = Math.max(0, nCarichi - 1);
+    const extraScarichi = Math.max(0, nScarichi - 1);
+    const suppCarico  = parseFloat(cliente.supplemento_carico  || 0);
+    const suppScarico = parseFloat(cliente.supplemento_scarico || 0);
+    const totCl = (extraCarichi * suppCarico) + (extraScarichi * suppScarico);
+    setForm(f => ({ ...f, supplemento_cliente: totCl > 0 ? totCl.toFixed(2) : '' }));
+  }, [stops, form.cliente_id, clients]);
 
   // Suggerimento tratta quando cambiano cliente, trasportatore e province
   const fetchSuggestion = useCallback(async (clienteId, carrierId, stopsData) => {
@@ -252,7 +260,14 @@ export default function WorkOrderFormPage() {
       }
     }
     if (!validateStops()) return;
-    if (!confirm(`Portare l'ordine in stato "${STATUS_LABELS[newStatus]}"?`)) return;
+    if (newStatus === 'confermato') {
+      const prezzoCliente = parseFloat(form.prezzo_cliente || 0);
+      const costoTrasportatore = parseFloat(form.costo_trasportatore || 0);
+      if (prezzoCliente === 0 && costoTrasportatore === 0) {
+        alert('Prezzo cliente e costo trasportatore sono entrambi a zero.\nInserisci i valori prima di confermare l\'ordine.');
+        return;
+      }
+    }
     setSaving(true);
     try {
       await api.put(`/work-orders/${id}`, { ...form, stops, status: newStatus });

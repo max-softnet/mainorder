@@ -9,7 +9,7 @@ const EMPTY = {
   email: '', telefono: '', sito_web: '', referente: '', note: '',
   fatturazione_indirizzo: '', fatturazione_citta: '', fatturazione_cap: '',
   fatturazione_provincia: '', sdi: '', codice_fiscale: '', partita_iva: '',
-  supplemento_carico: '', supplemento_scarico: '', active: true,
+  fic_id: '', supplemento_carico: '', supplemento_scarico: '', active: true,
 };
 
 export default function ClientFormPage() {
@@ -185,6 +185,14 @@ export default function ClientFormPage() {
                 <input className="mo-form-control" value={form.sdi} onChange={set('sdi')} placeholder="0000000" />
               </Field>
             </div>
+            {form.fic_id && (
+              <div className="col-md-4">
+                <Field label="ID Fatture in Cloud">
+                  <input className="mo-form-control" value={form.fic_id} readOnly
+                    style={{ background: '#f9fafb', color: '#6b7280', cursor: 'default' }} />
+                </Field>
+              </div>
+            )}
           </div>
         </div>
 

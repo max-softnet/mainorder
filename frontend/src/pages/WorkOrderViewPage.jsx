@@ -97,7 +97,14 @@ export default function WorkOrderViewPage() {
         return;
       }
     }
-    if (!confirm(`Portare l'ordine in stato "${STATUS_LABELS[newStatus]}"?`)) return;
+    if (newStatus === 'confermato') {
+      const prezzoCliente = parseFloat(order.prezzo_cliente || 0);
+      const costoTrasportatore = parseFloat(order.costo_trasportatore || 0);
+      if (prezzoCliente === 0 && costoTrasportatore === 0) {
+        alert('Prezzo cliente e costo trasportatore sono entrambi a zero.\nModifica l\'ordine e inserisci i valori prima di confermare.');
+        return;
+      }
+    }
     setSaving(true);
     try {
       const payload = {
@@ -135,6 +142,24 @@ export default function WorkOrderViewPage() {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleClone = async () => {
+    const { data } = await api.get(`/work-orders/${id}`);
+    const { stops: rawStops, carrier_contacts: cc, documents, numero_ordine, numero_tmp, status, ...rest } = data;
+    const DATE_FIELDS = ['data_ordine', 'data_carico', 'data_scarico'];
+    DATE_FIELDS.forEach(f => { if (rest[f]) rest[f] = rest[f].slice(0, 10); });
+    const cloneForm = {
+      ...rest,
+      data_ordine: new Date().toISOString().slice(0, 10),
+      carrier_contact_ids: cc?.map(c => c.id) || [],
+    };
+    const cloneStops = (rawStops || []).map(({ id: _id, work_order_id, created_at, updated_at, ...s }) => ({
+      ...s,
+      data: s.data ? s.data.slice(0, 10) : '',
+      _tmpId: Math.random().toString(36).slice(2),
+    }));
+    navigate('/work-orders/new', { state: { clone: { form: cloneForm, stops: cloneStops } } });
   };
 
   const handleResendEmail = async () => {
@@ -213,6 +238,9 @@ export default function WorkOrderViewPage() {
                 : <>→ {STATUS_LABELS[s]}</>}
             </button>
           ))}
+          <button className="mo-btn mo-btn-ghost" onClick={handleClone} title="Clona ordine">
+            <i className="bi bi-copy me-1" /> Clona
+          </button>
           {canEdit && (
             <button className="mo-btn mo-btn-primary" onClick={() => navigate(`/work-orders/${id}/edit`)}>
               <i className="bi bi-pencil me-1" /> Modifica

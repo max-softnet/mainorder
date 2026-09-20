@@ -86,6 +86,8 @@ export default function Layout({ children }) {
           {user?.role === 'admin' && (<>
             {navItem('/users', 'bi-people', 'Utenti')}
             {navItem('/mail-logs', 'bi-envelope-check', 'Log email')}
+            {navItem('/access-logs', 'bi-shield-lock', 'Log accessi')}
+            {navItem('/fic-sync', 'bi-cloud-arrow-down', 'Sync FiC')}
             {navItem('/settings', 'bi-sliders', 'Impostazioni')}
           </>)}
         </nav>

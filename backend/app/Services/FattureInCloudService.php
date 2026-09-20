@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class FattureInCloudService
 {
-    private string $baseUrl = 'https://api.fattureincloud.it/v2';
+    private string $baseUrl = 'https://api-v2.fattureincloud.it';
 
     private function token(): string
     {
@@ -41,13 +41,46 @@ class FattureInCloudService
         return filled($id) ? (int) $id : null;
     }
 
-    private function headers(): array
+    private function headers(bool $withContentType = false): array
     {
-        return [
+        $h = [
             'Authorization' => 'Bearer ' . $this->token(),
-            'Content-Type'  => 'application/json',
             'Accept'        => 'application/json',
         ];
+        if ($withContentType) {
+            $h['Content-Type'] = 'application/json';
+        }
+        return $h;
+    }
+
+    /**
+     * Legge tutti i clienti da FiC con paginazione automatica.
+     */
+    public function listClients(): array
+    {
+        $all  = [];
+        $page = 1;
+
+        do {
+            $response = Http::withHeaders($this->headers())
+                ->get("{$this->baseUrl}/c/{$this->companyId()}/entities/clients", [
+                    'page'     => $page,
+                    'per_page' => 50,
+                ]);
+
+            if ($response->failed()) {
+                $msg = $response->json('error.message') ?? $response->body();
+                throw new \RuntimeException("Errore lettura clienti FiC: {$msg}");
+            }
+
+            $json     = $response->json();
+            $data     = $json['data'] ?? [];
+            $all      = array_merge($all, $data);
+            $lastPage = $json['last_page'] ?? 1;
+            $page++;
+        } while ($page <= $lastPage);
+
+        return $all;
     }
 
     /**
@@ -56,15 +89,19 @@ class FattureInCloudService
      */
     public function testConnection(): array
     {
-        $response = Http::withHeaders($this->headers())
-            ->get("{$this->baseUrl}/c/{$this->companyId()}/info");
+        $url      = "{$this->baseUrl}/c/{$this->companyId()}/entities/clients";
+        $response = Http::withHeaders($this->headers())->get($url);
 
         if ($response->failed()) {
-            $msg = $response->json('error.message') ?? $response->body();
-            throw new \RuntimeException("Errore connessione FiC: {$msg}");
+            $status = $response->status();
+            $msg    = $response->json('error.message')
+                   ?? $response->json('message')
+                   ?? strip_tags($response->body());
+            throw new \RuntimeException("HTTP {$status} — " . mb_substr(trim($msg), 0, 300));
         }
 
-        return $response->json('data') ?? [];
+        $total = $response->json('total') ?? '?';
+        return ['name' => "Company {$this->companyId()} ({$total} clienti)"];
     }
 
     /**
@@ -108,6 +145,7 @@ class FattureInCloudService
         $body = [
             'data' => [
                 'type'   => 'invoice',
+                'status' => 'draft',
                 'date'   => now()->format('Y-m-d'),
                 'entity' => $this->buildEntity($client),
                 'items_list' => $items,
@@ -128,7 +166,7 @@ class FattureInCloudService
             $body['data']['ei_data']   = ['vat_kind' => 'I'];
         }
 
-        $response = Http::withHeaders($this->headers())
+        $response = Http::withHeaders($this->headers(true))
             ->post("{$this->baseUrl}/c/{$this->companyId()}/issued_documents", $body);
 
         if ($response->failed()) {
@@ -142,6 +180,12 @@ class FattureInCloudService
 
     private function buildEntity(Client $client): array
     {
+        // Se il cliente ha il fic_id, collegalo all'anagrafica FiC esistente
+        if ($client->fic_id) {
+            return ['id' => (int) $client->fic_id];
+        }
+
+        // Altrimenti costruisci l'entity inline
         $entity = [
             'name'                 => $client->ragione_sociale,
             'address_street'       => $client->fatturazione_indirizzo ?: $client->indirizzo,

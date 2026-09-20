@@ -103,7 +103,7 @@ class BillingController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Connessione riuscita.',
-                'company' => $info['name'] ?? null,
+                'company' => $info['email'] ?? ($info['name'] ?? null),
             ]);
         } catch (\Exception $e) {
             return response()->json([

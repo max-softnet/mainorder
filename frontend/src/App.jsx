@@ -18,6 +18,8 @@ import RoutesPage from './pages/RoutesPage';
 import BillingPage from './pages/BillingPage';
 import UsersPage from './pages/UsersPage';
 import MailLogsPage from './pages/MailLogsPage';
+import AccessLogsPage from './pages/AccessLogsPage';
+import FicSyncPage from './pages/FicSyncPage';
 
 export default function App() {
   return (
@@ -58,6 +60,8 @@ export default function App() {
           {/* Utenti (solo admin) */}
           <Route path="/users" element={<PrivateRoute roles={['admin']}><UsersPage /></PrivateRoute>} />
           <Route path="/mail-logs" element={<PrivateRoute roles={['admin']}><MailLogsPage /></PrivateRoute>} />
+          <Route path="/access-logs" element={<PrivateRoute roles={['admin']}><AccessLogsPage /></PrivateRoute>} />
+          <Route path="/fic-sync" element={<PrivateRoute roles={['admin']}><FicSyncPage /></PrivateRoute>} />
 
           {/* Impostazioni (solo admin) */}
           <Route path="/settings" element={<PrivateRoute roles={['admin']}><SettingsPage /></PrivateRoute>} />

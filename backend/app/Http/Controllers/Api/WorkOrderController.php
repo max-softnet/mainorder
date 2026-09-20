@@ -108,21 +108,39 @@ class WorkOrderController extends Controller
 
         $oldStatus = $workOrder->status;
         $newStatus = $data['status'] ?? $oldStatus;
+        $sendingConfirm = ($newStatus === 'confermato' && $oldStatus === 'in_attesa');
 
-        // Gestione cambio stato → confermato
-        if ($newStatus === 'confermato' && $oldStatus === 'in_attesa') {
+        $data = $this->normalizeNumericFields($data);
+
+        // 1. Salva tutti i dati del form (senza status se stiamo confermando)
+        if ($sendingConfirm) unset($data['status']);
+
+        $workOrder->update(array_diff_key($data, ['stops' => 1, 'carrier_contact_ids' => 1]));
+
+        // 2. Aggiorna tappe
+        if (isset($data['stops'])) {
+            $workOrder->stops()->delete();
+            $workOrder->stops()->createMany($data['stops']);
+        }
+
+        // 3. Aggiorna referenti
+        if (isset($data['carrier_contact_ids'])) {
+            $workOrder->carrierContacts()->sync($data['carrier_contact_ids']);
+        }
+
+        // 4. Ora che i dati sono salvati, gestisci il cambio stato
+        if ($sendingConfirm) {
             $mittente    = $user->email;
             $contacts    = $workOrder->carrierContacts()->get();
             $destinatari = $contacts->pluck('email')->filter()->implode(', ');
             $workOrder->conferma($mittente, $destinatari ?: '—');
-            unset($data['status']);
 
-            // Invio email con PDF allegato
+            // Invia mail con i dati aggiornati
             $workOrder->load(['cliente', 'carrier', 'vehicleType', 'stops']);
             $this->sendConfirmationMail($workOrder, $user, $contacts->pluck('email')->filter()->values(), 'conferma_ordine');
         }
 
-        // Traccia altri cambi stato
+        // 5. Traccia altri cambi stato
         if (isset($data['status']) && $data['status'] !== $oldStatus) {
             WorkOrderUpdate::create([
                 'work_order_id' => $workOrder->id,
@@ -130,21 +148,6 @@ class WorkOrderController extends Controller
                 'status_from'   => $oldStatus,
                 'status_to'     => $data['status'],
             ]);
-        }
-
-        $data = $this->normalizeNumericFields($data);
-
-        $workOrder->update(array_diff_key($data, ['stops' => 1, 'carrier_contact_ids' => 1]));
-
-        // Aggiorna tappe
-        if (isset($data['stops'])) {
-            $workOrder->stops()->delete();
-            $workOrder->stops()->createMany($data['stops']);
-        }
-
-        // Aggiorna referenti
-        if (isset($data['carrier_contact_ids'])) {
-            $workOrder->carrierContacts()->sync($data['carrier_contact_ids']);
         }
 
         $this->syncRoute($workOrder->fresh());

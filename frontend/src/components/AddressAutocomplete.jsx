@@ -3,23 +3,26 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 // --- Google Maps loader ---
 let googleLoaderPromise = null;
 let googleApiWorks = true; // false dopo il primo 403, persiste per tutta la sessione
-let resolvedApiKey = null; // cache della chiave letta dal backend
+let resolvedApiKey = null;
+let resolvedCountries = null;
 
-async function resolveApiKey() {
-  if (resolvedApiKey !== null) return resolvedApiKey;
-  // Prova prima dal backend (impostazioni admin), poi da .env come fallback
+async function resolveConfig() {
+  if (resolvedApiKey !== null) return;
   try {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
     const res = await fetch(`${baseUrl}/config`);
     if (res.ok) {
       const data = await res.json();
-      if (data.google_maps_key) {
-        resolvedApiKey = data.google_maps_key;
-        return resolvedApiKey;
-      }
+      if (data.google_maps_key) resolvedApiKey = data.google_maps_key;
+      if (data.maps_countries)  resolvedCountries = data.maps_countries.split(',').map(s => s.trim()).filter(Boolean);
     }
   } catch (_) {}
-  resolvedApiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+  if (!resolvedApiKey)   resolvedApiKey   = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+  if (!resolvedCountries) resolvedCountries = ['it', 'fr', 'ch', 'at', 'si', 'sm', 'va', 'es'];
+}
+
+async function resolveApiKey() {
+  await resolveConfig();
   return resolvedApiKey;
 }
 
@@ -144,7 +147,7 @@ export default function AddressAutocomplete({
     if (text.length < 3) { setSuggestions([]); return; }
     try {
       const { suggestions: preds } = await window.google.maps.places.AutocompleteSuggestion
-        .fetchAutocompleteSuggestions({ input: text, includedRegionCodes: ['it', 'fr', 'ch', 'at', 'si', 'sm', 'va', 'es'], language: 'it' });
+        .fetchAutocompleteSuggestions({ input: text, includedRegionCodes: resolvedCountries || ['it'], language: 'it' });
       setSuggestions((preds || []).filter(p => p.placePrediction).map(p => ({ _type: 'google', _pred: p.placePrediction })));
       setOpen(true);
       setActiveIdx(-1);

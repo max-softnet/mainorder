@@ -111,6 +111,7 @@ export default function ClientViewPage() {
             <Row label="P.IVA"          value={client.partita_iva} />
             <Row label="Cod. Fiscale"   value={client.codice_fiscale} />
             <Row label="Codice SDI"     value={client.sdi} />
+            {client.fic_id && <Row label="ID Fatture in Cloud" value={String(client.fic_id)} />}
             <Row label="Indirizzo fatt." value={client.fatturazione_indirizzo} />
             <Row label="Città fatt."    value={[client.fatturazione_citta, client.fatturazione_cap, client.fatturazione_provincia].filter(Boolean).join(' ')} />
 

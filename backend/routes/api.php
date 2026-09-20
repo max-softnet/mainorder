@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\WorkOrderController;
 use App\Http\Controllers\Api\WorkOrderDocumentController;
 use App\Http\Controllers\Api\WorkOrderPdfController;
 use App\Http\Controllers\Api\BillingController;
+use App\Http\Controllers\Api\AccessLogController;
+use App\Http\Controllers\Api\FicSyncController;
 use App\Http\Controllers\Api\MailLogController;
 use App\Http\Controllers\Api\StatisticsController;
 use Illuminate\Support\Facades\Route;
@@ -24,7 +26,8 @@ Route::post('/login', [AuthController::class, 'login']);
 // Config pubblica (senza auth)
 Route::get('/config', function () {
     return response()->json([
-        'google_maps_key' => \App\Models\Setting::get('google_maps_key', ''),
+        'google_maps_key'  => \App\Models\Setting::get('google_maps_key', ''),
+        'maps_countries'   => \App\Models\Setting::get('maps_countries', 'it,fr,ch,at,si,sm,va,es'),
     ]);
 });
 
@@ -80,6 +83,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Log email (solo admin)
     Route::get('mail-logs', [MailLogController::class, 'index']);
+
+    // Log accessi (solo admin)
+    Route::get('access-logs', [AccessLogController::class, 'index']);
+
+    // Sync clienti Fatture in Cloud (solo admin)
+    Route::get('fic/clients/preview', [FicSyncController::class, 'preview']);
+    Route::post('fic/clients/import', [FicSyncController::class, 'import']);
 
     // Utenti (solo admin)
     Route::apiResource('users', UserController::class);

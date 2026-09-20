@@ -82,6 +82,7 @@ class ClientController extends Controller
             'fatturazione_citta'       => 'nullable|string|max:100',
             'fatturazione_cap'         => 'nullable|string|max:10',
             'fatturazione_provincia'   => 'nullable|string|max:5',
+            'fic_id'                   => 'nullable|integer',
             'sdi'                      => 'nullable|string|max:20',
             'codice_fiscale'           => 'nullable|string|max:20',
             'partita_iva'              => 'nullable|string|max:20',
