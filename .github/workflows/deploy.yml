@@ -1,0 +1,43 @@
+name: Deploy to SiteGround
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ssh.francescod131.sg-host.com
+          port: 18765
+          username: u2519-pn6yuccwnuam
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          script: |
+            set -e
+            cd ~/mainorder
+
+            echo "=== Git pull ==="
+            git pull origin main
+
+            echo "=== Build frontend ==="
+            cd frontend
+            npm install --silent
+            npm run build
+            cd ..
+
+            echo "=== Copia dist in public ==="
+            cp -r frontend/dist/* backend/public/
+
+            echo "=== Migrate e cache ==="
+            cd backend
+            php artisan migrate --force
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan view:clear
+
+            echo "=== Deploy completato ==="
