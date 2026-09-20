@@ -23,42 +23,38 @@ jobs:
         working-directory: frontend
         run: npm ci && npm run build
 
-      - name: Setup SSH key
+      - name: Setup SSH agent
         run: |
+          eval $(ssh-agent -s)
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          echo "${{ secrets.SSH_PASSPHRASE }}" | ssh-add ~/.ssh/deploy_key
           ssh-keyscan -p 18765 ssh.francescod131.sg-host.com >> ~/.ssh/known_hosts 2>/dev/null || true
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
 
       - name: Upload and deploy
-        env:
-          SSH_PASSPHRASE: ${{ secrets.SSH_PASSPHRASE }}
         run: |
           # Crea tar del dist
           tar -czf /tmp/frontend-dist.tar.gz -C frontend/dist .
 
-          # Trasferisci via scp con sshpass
-          sshpass -p "$SSH_PASSPHRASE" scp \
-            -i ~/.ssh/deploy_key \
-            -P 18765 \
+          # Copia sul server
+          scp -P 18765 \
             -o StrictHostKeyChecking=no \
-            -o PreferredAuthentications=publickey \
             /tmp/frontend-dist.tar.gz \
             u2519-pn6yuccwnuam@ssh.francescod131.sg-host.com:/tmp/frontend-dist.tar.gz
 
-          # Estrai sul server + git pull + migrate
-          sshpass -p "$SSH_PASSPHRASE" ssh \
-            -i ~/.ssh/deploy_key \
-            -p 18765 \
+          # Estrai + git pull + migrate
+          ssh -p 18765 \
             -o StrictHostKeyChecking=no \
-            -o PreferredAuthentications=publickey \
             u2519-pn6yuccwnuam@ssh.francescod131.sg-host.com '
               set -e
               echo "=== Estrazione frontend ==="
               mkdir -p ~/mainorder/backend/public
               tar -xzf /tmp/frontend-dist.tar.gz -C ~/mainorder/backend/public/
               rm -f /tmp/frontend-dist.tar.gz
-              echo "=== Git pull backend ==="
+              echo "=== Git pull ==="
               cd ~/mainorder
               git pull origin main
               cd backend
