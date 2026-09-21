@@ -19,7 +19,8 @@ class ClientController extends Controller
             ->when($request->has('active'), fn($q) => $q->where('active', $request->boolean('active')))
             ->orderBy('ragione_sociale');
 
-        return response()->json($query->paginate(20));
+        $perPage = min((int) ($request->per_page ?? 20), 999);
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request)

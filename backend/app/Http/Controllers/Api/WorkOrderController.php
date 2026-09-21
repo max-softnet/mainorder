@@ -13,6 +13,7 @@ use App\Models\WorkOrder;
 use App\Models\WorkOrderUpdate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class WorkOrderController extends Controller
 {
@@ -130,6 +131,11 @@ class WorkOrderController extends Controller
 
         // 4. Ora che i dati sono salvati, gestisci il cambio stato
         if ($sendingConfirm) {
+            // Genera token univoco per aggiornamento dati mezzo dal trasportatore
+            if (!$workOrder->carrier_token) {
+                $workOrder->update(['carrier_token' => Str::random(48)]);
+            }
+
             $mittente    = $user->email;
             $contacts    = $workOrder->carrierContacts()->get();
             $destinatari = $contacts->pluck('email')->filter()->implode(', ');
@@ -354,11 +360,11 @@ class WorkOrderController extends Controller
         $destinatari = collect([$user->email])->merge($emailsContatti)->unique()->implode(', ');
         try {
             Setting::applySmtp();
-            $mailable = new WorkOrderConfirmed($workOrder);
-            Mail::to($user->email)->send($mailable);
-            if ($emailsContatti->isNotEmpty()) {
-                Mail::to($emailsContatti->toArray())->send(new WorkOrderConfirmed($workOrder));
-            }
+            $tutti = collect([$user->email])->merge($emailsContatti)->unique()->values();
+            $bcc   = Setting::get('mail_bcc');
+            $mailer = Mail::to($tutti->toArray());
+            if (filled($bcc)) $mailer = $mailer->bcc($bcc);
+            $mailer->send(new WorkOrderConfirmed($workOrder));
             MailLog::create([
                 'work_order_id' => $workOrder->id,
                 'tipo'          => $tipo,

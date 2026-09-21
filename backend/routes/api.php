@@ -18,10 +18,16 @@ use App\Http\Controllers\Api\AccessLogController;
 use App\Http\Controllers\Api\FicSyncController;
 use App\Http\Controllers\Api\MailLogController;
 use App\Http\Controllers\Api\StatisticsController;
+use App\Http\Controllers\Api\CarrierUpdateController;
 use Illuminate\Support\Facades\Route;
 
 // Auth
 Route::post('/login', [AuthController::class, 'login']);
+
+// Aggiornamento dati mezzo da trasportatore (pubblico, con token)
+Route::get('carrier-update/logo', [CarrierUpdateController::class, 'logo']);
+Route::get('carrier-update/{token}', [CarrierUpdateController::class, 'show']);
+Route::post('carrier-update/{token}', [CarrierUpdateController::class, 'update']);
 
 // Config pubblica (senza auth)
 Route::get('/config', function () {

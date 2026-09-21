@@ -20,6 +20,7 @@ import UsersPage from './pages/UsersPage';
 import MailLogsPage from './pages/MailLogsPage';
 import AccessLogsPage from './pages/AccessLogsPage';
 import FicSyncPage from './pages/FicSyncPage';
+import CarrierUpdatePage from './pages/CarrierUpdatePage';
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/carrier-update/:token" element={<CarrierUpdatePage />} />
 
           <Route path="/" element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
 

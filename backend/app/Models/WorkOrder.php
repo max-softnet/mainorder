@@ -17,7 +17,7 @@ class WorkOrder extends Model
         'costo_trasportatore', 'supplemento_trasportatore',
         'vehicle_type_id', 'n_bancali', 'tipologia_merce',
         'peso', 'metri_lineari', 'km_totali', 'rif_ddt', 'annotazioni',
-        'nome_autista', 'targa_motrice', 'targa_rimorchio',
+        'nome_autista', 'targa_motrice', 'targa_rimorchio', 'carrier_token',
         'inviato', 'inviato_da', 'inviato_a', 'inviato_il',
         'confermato_da_fornitore', 'numero_documento', 'annotazioni_mail',
     ];

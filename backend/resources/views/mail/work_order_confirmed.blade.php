@@ -19,6 +19,10 @@
   .badge-scarico { display:inline-block; background:#fef9c3; color:#854d0e; padding:1px 8px; border-radius:12px; font-size:11px; font-weight:600; margin-right:6px; }
   .footer { padding: 18px 32px; background: #f9f9f9; font-size: 12px; color: #999; border-top: 1px solid #eee; }
   .badge { display: inline-block; background: #d1fae5; color: #065f46; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .tariffa { background: #f3f0ff; border-left: 4px solid #6d28d9; padding: 12px 16px; border-radius: 4px; margin: 18px 0; }
+  .tariffa .label-t { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6d28d9; margin-bottom: 4px; }
+  .tariffa .valore { font-size: 22px; font-weight: 700; color: #1e1b4b; }
+  .btn-update { display: inline-block; background: #6d28d9; color: #ffffff !important; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: 600; font-size: 14px; margin: 18px 0; }
 </style>
 </head>
 <body>
@@ -78,6 +82,17 @@
     </table>
     @endif
 
+    {{-- Tariffa trasportatore --}}
+    @php
+      $tariffa = (float)($order->costo_trasportatore ?? 0) + (float)($order->supplemento_trasportatore ?? 0);
+    @endphp
+    @if($tariffa > 0)
+    <div class="tariffa">
+      <div class="label-t">Tariffa</div>
+      <div class="valore">€ {{ number_format($tariffa, 2, ',', '.') }}</div>
+    </div>
+    @endif
+
     @if($order->annotazioni_mail || $order->annotazioni)
     <table class="table">
       <tr><th colspan="2">Note</th></tr>
@@ -90,6 +105,18 @@
     <p style="margin-top:20px;">
       <span class="badge">✓ Confermato</span>
     </p>
+
+    {{-- Link aggiornamento dati mezzo --}}
+    @if($order->carrier_token)
+    <hr style="border:none; border-top:1px solid #eee; margin:24px 0;">
+    <p style="margin-bottom:8px; font-weight:600;">Aggiorna i dati del mezzo</p>
+    <p style="color:#555; font-size:13px; margin-bottom:12px;">
+      Clicca il pulsante qui sotto per inserire o aggiornare i dati del conducente e del mezzo (nome autista, targa motrice, targa rimorchio).
+    </p>
+    <a class="btn-update" href="{{ config('app.frontend_url') }}/carrier-update/{{ $order->carrier_token }}">
+      Inserisci dati mezzo
+    </a>
+    @endif
   </div>
   <div class="footer">
     Questo messaggio è stato generato automaticamente da <strong>MainOrder</strong>. Non rispondere a questa email.

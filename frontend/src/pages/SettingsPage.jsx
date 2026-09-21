@@ -37,6 +37,7 @@ const FIELD_ORDER = {
     'smtp_encryption', 'smtp_username',
     'smtp_password',
     'mail_from_address', 'mail_from_name',
+    'mail_bcc',
   ],
   fatturazione: [
     'fic_access_token', 'fic_company_id',
