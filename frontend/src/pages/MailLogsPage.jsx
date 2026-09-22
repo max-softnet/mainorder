@@ -9,6 +9,11 @@ const TIPO_LABELS = {
   reinvio:         'Reinvio',
 };
 
+const thStyle = {
+  fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em',
+  color: '#6b7280', fontWeight: 600, paddingBottom: 8, whiteSpace: 'nowrap',
+};
+
 const TIPO_BADGE = {
   conferma_ordine: { bg: '#ede9fe', color: '#5b21b6' },
   reinvio:         { bg: '#dbeafe', color: '#1e40af' },
@@ -47,13 +52,13 @@ export default function MailLogsPage() {
             <table className="table table-sm align-middle mb-0" style={{ fontSize: '0.85rem' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
-                  <th className="mo-form-label pb-2">Data</th>
-                  <th className="mo-form-label pb-2">Tipo</th>
-                  <th className="mo-form-label pb-2">Ordine</th>
-                  <th className="mo-form-label pb-2">Destinatari</th>
-                  <th className="mo-form-label pb-2">Stato</th>
-                  <th className="mo-form-label pb-2">Inviata da</th>
-                  <th className="mo-form-label pb-2">Errore</th>
+                  <th style={thStyle}>Data</th>
+                  <th style={thStyle}>Tipo</th>
+                  <th style={thStyle}>Ordine</th>
+                  <th style={thStyle}>Destinatari</th>
+                  <th style={thStyle}>Stato</th>
+                  <th style={thStyle}>Inviata da</th>
+                  <th style={thStyle}>Errore</th>
                 </tr>
               </thead>
               <tbody>
