@@ -26,7 +26,10 @@ class WorkOrderController extends Controller
         }
 
         $query = WorkOrder::with($relations)
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->status, function ($q) use ($request) {
+                $statuses = array_map('trim', explode(',', $request->status));
+                return count($statuses) > 1 ? $q->whereIn('status', $statuses) : $q->where('status', $statuses[0]);
+            })
             ->when($request->cliente_id, fn($q) => $q->where('cliente_id', $request->cliente_id))
             ->when($request->carrier_id, fn($q) => $q->where('carrier_id', $request->carrier_id))
             ->when($request->data_carico, fn($q) => $q->whereDate('data_carico', $request->data_carico))

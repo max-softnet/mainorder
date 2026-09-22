@@ -27,6 +27,7 @@ export default function BillingPage() {
   const [clienteNome, setClienteNome] = useState(searchParams.get('cliente_nome') || '');
   const [dataDa, setDataDa] = useState(firstOfMonthISO());
   const [dataA, setDataA] = useState(todayISO());
+  const [statoFiltro, setStatoFiltro] = useState('da_fatturare'); // 'tutti' | 'da_fatturare' | 'fatturati'
 
   // Dati
   const [orders, setOrders] = useState([]);
@@ -42,13 +43,18 @@ export default function BillingPage() {
   const [sending, setSending] = useState(false);
   const [results, setResults] = useState(null);
 
-  const fetchOrders = useCallback(async (p = 1) => {
+  const fetchOrders = useCallback(async (p = 1, filtro = statoFiltro) => {
     setLoading(true);
     setSelected(new Set());
     try {
+      let statusParam;
+      if (filtro === 'da_fatturare') statusParam = 'confermato';
+      else if (filtro === 'fatturati') statusParam = 'fatturato';
+      else statusParam = 'confermato,fatturato';
+
       const { data } = await api.get('/work-orders', {
         params: {
-          status: 'confermato',
+          status: statusParam,
           cliente_id: clienteId || undefined,
           data_da: dataDa || undefined,
           data_a: dataA || undefined,
@@ -62,7 +68,7 @@ export default function BillingPage() {
     } finally {
       setLoading(false);
     }
-  }, [clienteId, dataDa, dataA]);
+  }, [clienteId, dataDa, dataA, statoFiltro]);
 
   useEffect(() => { fetchOrders(1); }, []);
 
@@ -72,7 +78,13 @@ export default function BillingPage() {
     fetchOrders(1);
   };
 
-  // --- Selezione ---
+  const handleTabChange = (tab) => {
+    setStatoFiltro(tab);
+    setPage(1);
+    fetchOrders(1, tab);
+  };
+
+  // --- Selezione: tutti gli ordini (confermati e fatturati) ---
   const allIds = orders.map(o => o.id);
   const allSelected = allIds.length > 0 && allIds.every(id => selected.has(id));
   const someSelected = allIds.some(id => selected.has(id));
@@ -151,6 +163,30 @@ export default function BillingPage() {
         </div>
       </div>
 
+      {/* Tab stato */}
+      <div className="d-flex gap-1 mb-3">
+        {[
+          { key: 'da_fatturare', label: 'Da fatturare' },
+          { key: 'fatturati',    label: 'Fatturati' },
+          { key: 'tutti',        label: 'Tutti' },
+        ].map(tab => (
+          <button
+            key={tab.key}
+            className="mo-btn"
+            style={{
+              fontWeight: 600, fontSize: '0.85rem',
+              padding: '0.45rem 1.1rem', borderRadius: 8,
+              background: statoFiltro === tab.key ? 'var(--mo-purple, #7c3aed)' : 'transparent',
+              color: statoFiltro === tab.key ? '#fff' : 'var(--mo-text-muted, #6b7280)',
+              border: statoFiltro === tab.key ? 'none' : '1px solid #e5e7eb',
+            }}
+            onClick={() => handleTabChange(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       {/* Filtri */}
       <div className="mo-card mb-3">
         <form onSubmit={handleFilter} className="d-flex gap-2 flex-wrap align-items-end">
@@ -193,7 +229,9 @@ export default function BillingPage() {
           <div className="text-center py-4 mo-text-muted">Caricamento...</div>
         ) : orders.length === 0 ? (
           <div className="text-center py-4 mo-text-muted">
-            Nessun ordine confermato nel periodo selezionato.
+            {statoFiltro === 'da_fatturare' && 'Nessun ordine da fatturare nel periodo selezionato.'}
+            {statoFiltro === 'fatturati' && 'Nessun ordine fatturato nel periodo selezionato.'}
+            {statoFiltro === 'tutti' && 'Nessun ordine nel periodo selezionato.'}
           </div>
         ) : (
           <div className="mo-table-wrap">
@@ -206,9 +244,10 @@ export default function BillingPage() {
                       checked={allSelected}
                       ref={el => { if (el) el.indeterminate = someSelected && !allSelected; }}
                       onChange={toggleAll}
-                      title="Seleziona tutti"
+                      title="Seleziona tutti (solo da fatturare)"
                     />
                   </th>
+                  <th style={{ width: 32 }}></th>
                   <th>N° Ordine</th>
                   <th>Data carico</th>
                   {!clienteId && <th>Cliente</th>}
@@ -223,11 +262,12 @@ export default function BillingPage() {
               </thead>
               <tbody>
                 {orders.map(o => {
+                  const isFatturato = o.status === 'fatturato';
                   const isChecked = selected.has(o.id);
                   return (
                     <tr
                       key={o.id}
-                      style={{ background: isChecked ? 'var(--mo-purple-light, #f5f3ff)' : undefined }}
+                      style={{ background: isChecked ? 'var(--mo-purple-light, #f5f3ff)' : isFatturato ? '#f0fdf4' : undefined }}
                     >
                       <td>
                         <input
@@ -235,6 +275,11 @@ export default function BillingPage() {
                           checked={isChecked}
                           onChange={() => toggleOne(o.id)}
                         />
+                      </td>
+                      <td>
+                        {isFatturato
+                          ? <i className="bi bi-check-circle-fill" style={{ color: '#16a34a', fontSize: '1rem' }} title="Fatturato" />
+                          : null}
                       </td>
                       <td>
                         <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--mo-purple)' }}>
@@ -407,6 +452,8 @@ export default function BillingPage() {
 function ConfirmModal({ show, onClose, onConfirm, sending, selectedOrders, totale }) {
   if (!show) return null;
 
+  const giàFatturati = selectedOrders.filter(o => o.status === 'fatturato');
+
   // Raggruppa per cliente per il riepilogo
   const byClient = selectedOrders.reduce((acc, o) => {
     const key = o.cliente?.ragione_sociale || `Cliente #${o.cliente_id}`;
@@ -437,9 +484,27 @@ function ConfirmModal({ show, onClose, onConfirm, sending, selectedOrders, total
             <i className="bi bi-send" style={{ color: 'var(--mo-purple)', fontSize: '1.2rem' }} />
             <h5 className="mb-0" style={{ fontWeight: 700 }}>Invia a Fatture in Cloud</h5>
           </div>
-          <p className="mo-text-muted mb-4" style={{ fontSize: '0.88rem' }}>
+          <p className="mo-text-muted mb-3" style={{ fontSize: '0.88rem' }}>
             Verrà creata una fattura per ogni cliente. Gli ordini passeranno in stato <strong>Fatturato</strong>.
           </p>
+
+          {giàFatturati.length > 0 && (
+            <div className="d-flex gap-2 p-3 mb-3"
+              style={{ background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: 10 }}>
+              <i className="bi bi-exclamation-triangle-fill" style={{ color: '#d97706', fontSize: '1.1rem', flexShrink: 0, marginTop: 2 }} />
+              <div>
+                <div style={{ fontWeight: 600, color: '#92400e', fontSize: '0.88rem', marginBottom: 4 }}>
+                  {giàFatturati.length === 1
+                    ? '1 ordine è già stato inviato a Fatture in Cloud'
+                    : `${giàFatturati.length} ordini sono già stati inviati a Fatture in Cloud`}
+                </div>
+                <div style={{ color: '#78350f', fontSize: '0.82rem' }}>
+                  {giàFatturati.map(o => o.numero_ordine || o.numero_tmp).join(', ')}
+                  {' '} — verranno inviati nuovamente come nuove bozze.
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Riepilogo per cliente */}
           <div className="d-flex flex-column gap-2 mb-4">
