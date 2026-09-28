@@ -7,6 +7,7 @@ import usePageTitle from '../hooks/usePageTitle';
 const TIPO_LABELS = {
   conferma_ordine: 'Conferma ordine',
   reinvio:         'Reinvio',
+  annullamento:    'Annullamento',
 };
 
 const thStyle = {
@@ -17,6 +18,7 @@ const thStyle = {
 const TIPO_BADGE = {
   conferma_ordine: { bg: '#ede9fe', color: '#5b21b6' },
   reinvio:         { bg: '#dbeafe', color: '#1e40af' },
+  annullamento:    { bg: '#fee2e2', color: '#991b1b' },
 };
 
 export default function MailLogsPage() {

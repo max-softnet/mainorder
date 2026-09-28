@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\WorkOrderCancelled;
 use App\Mail\WorkOrderConfirmed;
 use App\Models\Client;
 use App\Models\ClientRoute;
@@ -157,6 +158,38 @@ class WorkOrderController extends Controller
                 'status_from'   => $oldStatus,
                 'status_to'     => $data['status'],
             ]);
+
+            // Notifica annullamento ai referenti del trasportatore
+            if ($data['status'] === 'annullato') {
+                $contacts = $workOrder->carrierContacts()->get()->pluck('email')->filter()->values();
+                if ($contacts->isNotEmpty()) {
+                    $workOrder->load(['cliente', 'carrier', 'stops']);
+                    $bcc    = Setting::get('mail_bcc');
+                    $mailer = Mail::to($contacts->toArray());
+                    if (filled($bcc)) $mailer = $mailer->bcc($bcc);
+                    try {
+                        $mailer->send(new WorkOrderCancelled($workOrder));
+                        MailLog::create([
+                            'work_order_id' => $workOrder->id,
+                            'user_id'       => $user->id,
+                            'tipo'          => 'annullamento',
+                            'destinatari'   => $contacts->implode(', '),
+                            'mittente'      => $user->email,
+                            'stato'         => 'inviata',
+                        ]);
+                    } catch (\Exception $e) {
+                        MailLog::create([
+                            'work_order_id' => $workOrder->id,
+                            'user_id'       => $user->id,
+                            'tipo'          => 'annullamento',
+                            'destinatari'   => $contacts->implode(', '),
+                            'mittente'      => $user->email,
+                            'stato'         => 'errore',
+                            'errore'        => $e->getMessage(),
+                        ]);
+                    }
+                }
+            }
         }
 
         $this->syncRoute($workOrder->fresh());
