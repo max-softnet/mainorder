@@ -83,11 +83,13 @@ export default function Layout({ children }) {
             {navItem('/billing', 'bi-receipt', 'Fatturazione')}
             {navItem('/statistics', 'bi-bar-chart-line', 'Statistiche')}
           </>)}
-          {user?.role === 'admin' && (<>
-            {navItem('/users', 'bi-people', 'Utenti')}
+          {(user?.role === 'admin' || user?.role === 'operatore') && (<>
             {navItem('/mail-logs', 'bi-envelope-check', 'Log email')}
             {navItem('/access-logs', 'bi-shield-lock', 'Log accessi')}
             {navItem('/fic-sync', 'bi-cloud-arrow-down', 'Sync FiC')}
+          </>)}
+          {user?.role === 'admin' && (<>
+            {navItem('/users', 'bi-people', 'Utenti')}
             {navItem('/settings', 'bi-sliders', 'Impostazioni')}
           </>)}
         </nav>
