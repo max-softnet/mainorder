@@ -10,7 +10,7 @@ class AccessLogController extends Controller
 {
     public function index(Request $request)
     {
-        if (!$request->user()->isAdmin()) abort(403);
+        if (!$request->user()->isAdmin() && !$request->user()->isOperatore()) abort(403);
 
         $query = AccessLog::with('user')
             ->when($request->event, fn($q) => $q->where('event', $request->event))

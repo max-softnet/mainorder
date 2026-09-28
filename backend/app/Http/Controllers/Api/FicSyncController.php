@@ -16,7 +16,7 @@ class FicSyncController extends Controller
      */
     public function preview(Request $request)
     {
-        if (!$request->user()->isAdmin()) abort(403);
+        if (!$request->user()->isAdmin() && !$request->user()->isOperatore()) abort(403);
 
         $ficClients = $this->fic->listClients();
         $result     = [];
@@ -55,7 +55,7 @@ class FicSyncController extends Controller
      */
     public function import(Request $request)
     {
-        if (!$request->user()->isAdmin()) abort(403);
+        if (!$request->user()->isAdmin() && !$request->user()->isOperatore()) abort(403);
 
         $request->validate([
             'fic_ids'   => 'required|array|min:1',

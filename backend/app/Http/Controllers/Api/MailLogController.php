@@ -10,7 +10,7 @@ class MailLogController extends Controller
 {
     public function index(Request $request)
     {
-        if (!$request->user()->isAdmin()) abort(403);
+        if (!$request->user()->isAdmin() && !$request->user()->isOperatore()) abort(403);
 
         $logs = MailLog::with(['workOrder:id,numero_ordine,numero_tmp', 'mittente:id,name'])
             ->orderByDesc('created_at')
