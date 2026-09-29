@@ -162,13 +162,13 @@ export default function WorkOrdersPage() {
                   <td>
                     {(() => {
                       const s = o.stops?.find(s => s.tipo === 'carico');
-                      const luogo = s?.provincia || s?.citta;
+                      const luogo = [s?.citta, s?.provincia].filter(Boolean).join(' (') + (s?.citta && s?.provincia ? ')' : '');
                       return (
                         <div>
                           {o.data_carico
-                            ? <span>{new Date(o.data_carico).toLocaleDateString('it-IT')}</span>
+                            ? <div style={{ fontSize: '0.85rem' }}>{new Date(o.data_carico).toLocaleDateString('it-IT')}</div>
                             : <span className="mo-text-muted">—</span>}
-                          {luogo && <span className="mo-text-muted" style={{ fontSize: '0.78rem', marginLeft: 5 }}>{luogo}</span>}
+                          {luogo && <div className="mo-text-muted" style={{ fontSize: '0.78rem' }}>{luogo}</div>}
                         </div>
                       );
                     })()}
@@ -177,13 +177,13 @@ export default function WorkOrdersPage() {
                     {(() => {
                       const stops = o.stops || [];
                       const s = [...stops].reverse().find(s => s.tipo === 'scarico');
-                      const luogo = s?.provincia || s?.citta;
+                      const luogo = [s?.citta, s?.provincia].filter(Boolean).join(' (') + (s?.citta && s?.provincia ? ')' : '');
                       return (
                         <div>
                           {o.data_scarico
-                            ? <span>{new Date(o.data_scarico).toLocaleDateString('it-IT')}</span>
+                            ? <div style={{ fontSize: '0.85rem' }}>{new Date(o.data_scarico).toLocaleDateString('it-IT')}</div>
                             : <span className="mo-text-muted">—</span>}
-                          {luogo && <span className="mo-text-muted" style={{ fontSize: '0.78rem', marginLeft: 5 }}>{luogo}</span>}
+                          {luogo && <div className="mo-text-muted" style={{ fontSize: '0.78rem' }}>{luogo}</div>}
                         </div>
                       );
                     })()}
