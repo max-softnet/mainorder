@@ -226,18 +226,27 @@ export default function WorkOrderViewPage() {
             </button>
           )}
           {canEdit && order.status === 'confermato' && (
-            <button className="mo-btn mo-btn-outline" disabled={saving} onClick={handleResendEmail}>
+            <button className="mo-btn mo-btn-outline" disabled={saving} onClick={handleResendEmail}
+              style={{ background: '#2563eb', color: '#fff', borderColor: '#2563eb' }}>
               <i className="bi bi-envelope-arrow-up me-1" /> Reinvia mail
             </button>
           )}
-          {canEdit && STATUS_TRANSITIONS[order.status]?.map(s => (
-            <button key={s} className="mo-btn mo-btn-outline" disabled={saving}
-              onClick={() => handleStatusChange(s)}>
-              {s === 'confermato'
-                ? <><i className="bi bi-send me-1" />Conferma e invia ordine</>
-                : <>→ {STATUS_LABELS[s]}</>}
-            </button>
-          ))}
+          {canEdit && STATUS_TRANSITIONS[order.status]?.map(s => {
+            const btnStyle = s === 'annullato'
+              ? { background: '#dc2626', color: '#fff', borderColor: '#dc2626' }
+              : s === 'chiuso'
+              ? { background: '#16a34a', color: '#fff', borderColor: '#16a34a' }
+              : {};
+            return (
+              <button key={s} className="mo-btn mo-btn-outline" disabled={saving}
+                style={btnStyle}
+                onClick={() => handleStatusChange(s)}>
+                {s === 'confermato'
+                  ? <><i className="bi bi-send me-1" />Conferma e invia ordine</>
+                  : <>→ {STATUS_LABELS[s]}</>}
+              </button>
+            );
+          })}
           <button className="mo-btn mo-btn-ghost" onClick={handleClone} title="Clona ordine">
             <i className="bi bi-copy me-1" /> Clona
           </button>
