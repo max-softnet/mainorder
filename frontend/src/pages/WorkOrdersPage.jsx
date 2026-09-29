@@ -31,7 +31,7 @@ export default function WorkOrdersPage() {
     setLoading(true);
     try {
       const { data } = await api.get('/work-orders', {
-        params: { search: s || undefined, status: st || undefined, page: p },
+        params: { search: s || undefined, status: st || undefined, page: p, with_stops: 1 },
       });
       setOrders(data.data);
       setMeta(data);
@@ -160,14 +160,33 @@ export default function WorkOrdersPage() {
                     ) : '—'}
                   </td>
                   <td>
-                    {o.data_carico
-                      ? new Date(o.data_carico).toLocaleDateString('it-IT')
-                      : <span className="mo-text-muted">—</span>}
+                    {(() => {
+                      const s = o.stops?.find(s => s.tipo === 'carico');
+                      const luogo = s?.provincia || s?.citta;
+                      return (
+                        <div>
+                          {o.data_carico
+                            ? <span>{new Date(o.data_carico).toLocaleDateString('it-IT')}</span>
+                            : <span className="mo-text-muted">—</span>}
+                          {luogo && <span className="mo-text-muted" style={{ fontSize: '0.78rem', marginLeft: 5 }}>{luogo}</span>}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td>
-                    {o.data_scarico
-                      ? new Date(o.data_scarico).toLocaleDateString('it-IT')
-                      : <span className="mo-text-muted">—</span>}
+                    {(() => {
+                      const stops = o.stops || [];
+                      const s = [...stops].reverse().find(s => s.tipo === 'scarico');
+                      const luogo = s?.provincia || s?.citta;
+                      return (
+                        <div>
+                          {o.data_scarico
+                            ? <span>{new Date(o.data_scarico).toLocaleDateString('it-IT')}</span>
+                            : <span className="mo-text-muted">—</span>}
+                          {luogo && <span className="mo-text-muted" style={{ fontSize: '0.78rem', marginLeft: 5 }}>{luogo}</span>}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td>
                     {o.totale_cliente
