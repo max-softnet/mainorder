@@ -263,6 +263,7 @@ export default function WorkOrderViewPage() {
         <Row label="Data ordine" value={order.data_ordine ? new Date(order.data_ordine).toLocaleDateString('it-IT') : null} />
         <Row label="Cliente" value={order.cliente?.ragione_sociale} />
         <Row label="Trasportatore" value={order.carrier?.denominazione} />
+        <Row label="Creato da" value={order.creator?.name ?? null} />
       </Section>
 
       {/* Invio */}
