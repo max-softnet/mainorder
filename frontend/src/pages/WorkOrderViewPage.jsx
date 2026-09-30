@@ -19,8 +19,11 @@ const STATUS_TRANSITIONS = {
 };
 
 const STATUS_BADGE = {
-  in_attesa: 'mo-badge-bozza', confermato: 'mo-badge-confermato',
-  annullato: 'mo-badge-annullato', chiuso: 'mo-badge-consegnato', fatturato: 'mo-badge-in_transito',
+  in_attesa:  'mo-badge-in_lavorazione',
+  confermato: 'mo-badge-consegnato',
+  annullato:  'mo-badge-annullato',
+  chiuso:     'mo-badge-confermato',
+  fatturato:  'mo-badge-in_transito',
 };
 
 function Row({ label, value, mono = false }) {

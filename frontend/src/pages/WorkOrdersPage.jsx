@@ -11,9 +11,13 @@ const STATUS_LABELS = {
 };
 
 const STATUS_BADGE = {
-  in_attesa: 'mo-badge-bozza', confermato: 'mo-badge-confermato',
-  in_lavorazione: 'mo-badge-in_lavorazione', in_transito: 'mo-badge-in_transito',
-  annullato: 'mo-badge-annullato', chiuso: 'mo-badge-consegnato', fatturato: 'mo-badge-in_transito',
+  in_attesa:      'mo-badge-in_lavorazione',
+  confermato:     'mo-badge-consegnato',
+  in_lavorazione: 'mo-badge-in_lavorazione',
+  in_transito:    'mo-badge-in_transito',
+  annullato:      'mo-badge-annullato',
+  chiuso:         'mo-badge-confermato',
+  fatturato:      'mo-badge-in_transito',
 };
 
 export default function WorkOrdersPage() {
