@@ -6,7 +6,7 @@ import api from '../api/axios';
 import usePageTitle from '../hooks/usePageTitle';
 
 function fmt(n) {
-  return n != null ? new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2 }).format(n) : 'â€”';
+  return n != null ? new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2 }).format(n) : '—';
 }
 
 function ClientRoutesTab({ isAdmin }) {
@@ -114,7 +114,7 @@ function ClientRoutesTab({ isAdmin }) {
           </div>
         ) : (
           <>
-            {/* Mobile cards â€” tratte clienti */}
+            {/* Mobile cards — tratte clienti */}
             <div className="d-md-none">
               {routes.map((r, idx) => (
                 <div key={r.id} style={{ padding: '0.85rem 1rem', marginBottom: 8, borderRadius: 8, border: '1px solid #f0f0f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', background: idx % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
@@ -124,12 +124,12 @@ function ClientRoutesTab({ isAdmin }) {
                         <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.provincia_da}</span>
                         <i className="bi bi-arrow-right" style={{ color: '#9ca3af', fontSize: '0.75rem' }} />
                         <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.provincia_a}</span>
-                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#10b981' }}>â‚¬ {fmt(r.prezzo)}</span>
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#10b981' }}>€ {fmt(r.prezzo)}</span>
                       </div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 500, marginBottom: 2 }}>{r.cliente?.ragione_sociale || 'â€”'}</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, marginBottom: 2 }}>{r.cliente?.ragione_sociale || '—'}</div>
                       {r.note && <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{r.note}</div>}
                       <div style={{ fontSize: '0.72rem', color: '#d1d5db', marginTop: 2 }}>
-                        Aggiorn. {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : 'â€”'}
+                        Aggiorn. {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
                       </div>
                     </div>
                     {isAdmin && editing !== r.id && (
@@ -146,7 +146,7 @@ function ClientRoutesTab({ isAdmin }) {
                   {editing === r.id && (
                     <div style={{ marginTop: 8, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                       <input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 110 }}
-                        placeholder="Prezzo â‚¬" value={editForm.prezzo} onChange={e => setEditForm(f => ({ ...f, prezzo: e.target.value }))} />
+                        placeholder="Prezzo €" value={editForm.prezzo} onChange={e => setEditForm(f => ({ ...f, prezzo: e.target.value }))} />
                       <input className="mo-form-control" type="text" style={{ flex: '1 1 120px' }}
                         placeholder="Note..." value={editForm.note} onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
                       <button className="mo-btn mo-btn-primary" style={{ padding: '0.25rem 0.6rem' }} onClick={() => saveEdit(r.id)} disabled={saving}>
@@ -168,7 +168,7 @@ function ClientRoutesTab({ isAdmin }) {
                     <th>Da</th>
                     <th>A</th>
                     <th>Cliente</th>
-                    <th>Prezzo (â‚¬)</th>
+                    <th>Prezzo (€)</th>
                     <th>Ultimo aggiorn.</th>
                     <th>Note</th>
                     {isAdmin && <th></th>}
@@ -179,11 +179,11 @@ function ClientRoutesTab({ isAdmin }) {
                     <tr key={r.id}>
                       <td><span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>{r.provincia_da}</span></td>
                       <td><span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>{r.provincia_a}</span></td>
-                      <td style={{ fontWeight: 500 }}>{r.cliente?.ragione_sociale || 'â€”'}</td>
+                      <td style={{ fontWeight: 500 }}>{r.cliente?.ragione_sociale || '—'}</td>
                       {editing === r.id ? (
                         <>
                           <td><input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 110 }} value={editForm.prezzo} onChange={e => setEditForm(f => ({ ...f, prezzo: e.target.value }))} /></td>
-                          <td>â€”</td>
+                          <td>—</td>
                           <td><input className="mo-form-control" type="text" style={{ width: 140 }} value={editForm.note} placeholder="Note..." onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} /></td>
                           <td>
                             <div className="d-flex gap-1">
@@ -194,12 +194,12 @@ function ClientRoutesTab({ isAdmin }) {
                         </>
                       ) : (
                         <>
-                          <td style={{ fontWeight: 600 }}>â‚¬ {fmt(r.prezzo)}</td>
+                          <td style={{ fontWeight: 600 }}>€ {fmt(r.prezzo)}</td>
                           <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>
-                            {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : 'â€”'}
+                            {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
                             {r.last_work_order_id && <button className="mo-btn mo-btn-ghost ms-1" style={{ padding: '0 0.3rem', fontSize: '0.75rem' }} onClick={() => navigate(`/work-orders/${r.last_work_order_id}`)}><i className="bi bi-box-arrow-up-right" /></button>}
                           </td>
-                          <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>{r.note || <span style={{ opacity: 0.4 }}>â€”</span>}</td>
+                          <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>{r.note || <span style={{ opacity: 0.4 }}>—</span>}</td>
                           {isAdmin && (
                             <td>
                               <div className="d-flex gap-1 justify-content-end">
@@ -220,7 +220,7 @@ function ClientRoutesTab({ isAdmin }) {
 
         {meta && meta.last_page > 1 && (
           <div className="d-flex align-items-center justify-content-between mt-3 pt-3" style={{ borderTop: '1px solid #f3f4f6' }}>
-            <span className="mo-text-muted">{meta.from}â€“{meta.to} di {meta.total} tratte</span>
+            <span className="mo-text-muted">{meta.from}–{meta.to} di {meta.total} tratte</span>
             <div className="d-flex gap-1">
               <button className="mo-btn mo-btn-ghost" disabled={page === 1}
                 onClick={() => { const p = page - 1; setPage(p); fetchRoutes(p, search, provinciaDa, provinciaA); }}>
@@ -344,7 +344,7 @@ function CarrierRoutesTab({ isAdmin }) {
           </div>
         ) : (
           <>
-            {/* Mobile cards â€” tratte trasportatori */}
+            {/* Mobile cards — tratte trasportatori */}
             <div className="d-md-none">
               {routes.map((r, idx) => (
                 <div key={r.id} style={{ padding: '0.85rem 1rem', marginBottom: 8, borderRadius: 8, border: '1px solid #f0f0f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', background: idx % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
@@ -354,13 +354,13 @@ function CarrierRoutesTab({ isAdmin }) {
                         <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.provincia_da}</span>
                         <i className="bi bi-arrow-right" style={{ color: '#9ca3af', fontSize: '0.75rem' }} />
                         <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.provincia_a}</span>
-                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#10b981' }}>â‚¬ {fmt(r.costo)}</span>
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#10b981' }}>€ {fmt(r.costo)}</span>
                         {r.km_totali && <span style={{ fontSize: '0.78rem', color: '#9ca3af' }}>{parseFloat(r.km_totali).toFixed(0)} km</span>}
                       </div>
-                      <div style={{ fontSize: '0.82rem', fontWeight: 500, marginBottom: 2 }}>{r.carrier?.denominazione || 'â€”'}</div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, marginBottom: 2 }}>{r.carrier?.denominazione || '—'}</div>
                       {r.note && <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{r.note}</div>}
                       <div style={{ fontSize: '0.72rem', color: '#d1d5db', marginTop: 2 }}>
-                        Aggiorn. {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : 'â€”'}
+                        Aggiorn. {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
                       </div>
                     </div>
                     {isAdmin && editing !== r.id && (
@@ -379,7 +379,7 @@ function CarrierRoutesTab({ isAdmin }) {
                       <input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 90 }}
                         placeholder="km" value={editForm.km_totali} onChange={e => setEditForm(f => ({ ...f, km_totali: e.target.value }))} />
                       <input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 110 }}
-                        placeholder="Costo â‚¬" value={editForm.costo} onChange={e => setEditForm(f => ({ ...f, costo: e.target.value }))} />
+                        placeholder="Costo €" value={editForm.costo} onChange={e => setEditForm(f => ({ ...f, costo: e.target.value }))} />
                       <input className="mo-form-control" type="text" style={{ flex: '1 1 120px' }}
                         placeholder="Note..." value={editForm.note} onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
                       <button className="mo-btn mo-btn-primary" style={{ padding: '0.25rem 0.6rem' }} onClick={() => saveEdit(r.id)} disabled={saving}>
@@ -402,7 +402,7 @@ function CarrierRoutesTab({ isAdmin }) {
                     <th>A</th>
                     <th>Trasportatore</th>
                     <th>Km</th>
-                    <th>Costo (â‚¬)</th>
+                    <th>Costo (€)</th>
                     <th>Ultimo aggiorn.</th>
                     <th>Note</th>
                     {isAdmin && <th></th>}
@@ -413,12 +413,12 @@ function CarrierRoutesTab({ isAdmin }) {
                     <tr key={r.id}>
                       <td><span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>{r.provincia_da}</span></td>
                       <td><span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>{r.provincia_a}</span></td>
-                      <td style={{ fontWeight: 500 }}>{r.carrier?.denominazione || 'â€”'}</td>
+                      <td style={{ fontWeight: 500 }}>{r.carrier?.denominazione || '—'}</td>
                       {editing === r.id ? (
                         <>
                           <td><input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 90 }} value={editForm.km_totali} placeholder="km" onChange={e => setEditForm(f => ({ ...f, km_totali: e.target.value }))} /></td>
                           <td><input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 110 }} value={editForm.costo} onChange={e => setEditForm(f => ({ ...f, costo: e.target.value }))} /></td>
-                          <td>â€”</td>
+                          <td>—</td>
                           <td><input className="mo-form-control" type="text" style={{ width: 140 }} value={editForm.note} placeholder="Note..." onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} /></td>
                           <td>
                             <div className="d-flex gap-1">
@@ -429,13 +429,13 @@ function CarrierRoutesTab({ isAdmin }) {
                         </>
                       ) : (
                         <>
-                          <td className="mo-text-muted" style={{ fontSize: '0.85rem' }}>{r.km_totali ? `${parseFloat(r.km_totali).toFixed(0)} km` : 'â€”'}</td>
-                          <td style={{ fontWeight: 600 }}>â‚¬ {fmt(r.costo)}</td>
+                          <td className="mo-text-muted" style={{ fontSize: '0.85rem' }}>{r.km_totali ? `${parseFloat(r.km_totali).toFixed(0)} km` : '—'}</td>
+                          <td style={{ fontWeight: 600 }}>€ {fmt(r.costo)}</td>
                           <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>
-                            {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : 'â€”'}
+                            {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
                             {r.last_work_order_id && <button className="mo-btn mo-btn-ghost ms-1" style={{ padding: '0 0.3rem', fontSize: '0.75rem' }} onClick={() => navigate(`/work-orders/${r.last_work_order_id}`)}><i className="bi bi-box-arrow-up-right" /></button>}
                           </td>
-                          <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>{r.note || <span style={{ opacity: 0.4 }}>â€”</span>}</td>
+                          <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>{r.note || <span style={{ opacity: 0.4 }}>—</span>}</td>
                           {isAdmin && (
                             <td>
                               <div className="d-flex gap-1 justify-content-end">
@@ -456,7 +456,7 @@ function CarrierRoutesTab({ isAdmin }) {
 
         {meta && meta.last_page > 1 && (
           <div className="d-flex align-items-center justify-content-between mt-3 pt-3" style={{ borderTop: '1px solid #f3f4f6' }}>
-            <span className="mo-text-muted">{meta.from}â€“{meta.to} di {meta.total} tratte</span>
+            <span className="mo-text-muted">{meta.from}–{meta.to} di {meta.total} tratte</span>
             <div className="d-flex gap-1">
               <button className="mo-btn mo-btn-ghost" disabled={page === 1}
                 onClick={() => { const p = page - 1; setPage(p); fetchRoutes(p, search, provinciaDa, provinciaA); }}>

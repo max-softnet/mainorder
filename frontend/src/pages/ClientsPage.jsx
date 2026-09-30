@@ -141,11 +141,11 @@ export default function ClientsPage() {
                           <span className="mo-badge mo-badge-confermato ms-2" style={{ fontSize: '0.7rem' }}>suppl.</span>
                         ) : null}
                       </td>
-                      <td>{c.referente || <span className="mo-text-muted">â€”</span>}</td>
-                      <td>{c.citta || <span className="mo-text-muted">â€”</span>}</td>
-                      <td>{c.email || <span className="mo-text-muted">â€”</span>}</td>
-                      <td>{c.telefono || <span className="mo-text-muted">â€”</span>}</td>
-                      <td>{c.partita_iva || <span className="mo-text-muted">â€”</span>}</td>
+                      <td>{c.referente || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.citta || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.email || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.telefono || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.partita_iva || <span className="mo-text-muted">—</span>}</td>
                       <td>
                         <span className={`mo-badge ${c.active ? 'mo-badge-consegnato' : 'mo-badge-annullato'}`}>
                           {c.active ? 'Attivo' : 'Disattivo'}
@@ -179,7 +179,7 @@ export default function ClientsPage() {
         {meta && meta.last_page > 1 && (
           <div className="d-flex align-items-center justify-content-between mt-3 pt-3" style={{ borderTop: '1px solid #f3f4f6' }}>
             <span className="mo-text-muted">
-              {meta.from}â€“{meta.to} di {meta.total} clienti
+              {meta.from}–{meta.to} di {meta.total} clienti
             </span>
             <div className="d-flex gap-1">
               <button className="mo-btn mo-btn-ghost" disabled={page === 1}

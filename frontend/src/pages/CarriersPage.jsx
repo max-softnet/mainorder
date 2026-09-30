@@ -128,10 +128,10 @@ export default function CarriersPage() {
                   {carriers.map(c => (
                     <tr key={c.id}>
                       <td style={{ fontWeight: 600 }}>{c.denominazione}</td>
-                      <td>{c.citta || <span className="mo-text-muted">â€”</span>}</td>
-                      <td>{c.telefono || <span className="mo-text-muted">â€”</span>}</td>
-                      <td>{c.email || <span className="mo-text-muted">â€”</span>}</td>
-                      <td>{c.partita_iva || <span className="mo-text-muted">â€”</span>}</td>
+                      <td>{c.citta || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.telefono || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.email || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.partita_iva || <span className="mo-text-muted">—</span>}</td>
                       <td>
                         <span className="mo-badge mo-badge-confermato">
                           <i className="bi bi-people me-1" />{c.contacts_count}
@@ -168,7 +168,7 @@ export default function CarriersPage() {
 
         {meta && meta.last_page > 1 && (
           <div className="d-flex align-items-center justify-content-between mt-3 pt-3" style={{ borderTop: '1px solid #f3f4f6' }}>
-            <span className="mo-text-muted">{meta.from}â€“{meta.to} di {meta.total} trasportatori</span>
+            <span className="mo-text-muted">{meta.from}–{meta.to} di {meta.total} trasportatori</span>
             <div className="d-flex gap-1">
               <button className="mo-btn mo-btn-ghost" disabled={page === 1}
                 onClick={() => { setPage(p => p - 1); fetchCarriers(search, page - 1); }}>
