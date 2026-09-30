@@ -549,7 +549,8 @@ body {
    SMALL MOBILE  ≤ 480px
 ══════════════════════════════════════ */
 @media (max-width: 480px) {
-  .mo-search-wrap {
+  /* Nasconde la search nell'header globale */
+  .mo-header .mo-search-wrap {
     display: none;
   }
 
