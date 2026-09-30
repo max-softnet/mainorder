@@ -113,36 +113,36 @@ export default function WorkOrdersPage() {
       {/* Filtri */}
       <div className="mo-card mb-3">
         <form onSubmit={handleSearch}>
-          <div className="d-flex gap-2 flex-wrap mb-2">
-            <div className="mo-search-wrap flex-grow-1">
+          <div className="d-flex gap-2 flex-wrap align-items-center">
+            {/* Numero ordine — larghezza fissa su desktop */}
+            <div className="mo-search-wrap" style={{ flex: '1 1 140px', maxWidth: '220px' }}>
               <i className="bi bi-search" />
               <input className="mo-search w-100" type="text"
-                placeholder="Cerca per numero ordine..."
+                placeholder="N° ordine..."
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
-            <select className="mo-form-control" style={{ width: 'auto', minWidth: '140px' }}
+            {/* Sede carico — cresce ma non troppo */}
+            <input className="mo-form-control" style={{ flex: '1 1 140px', maxWidth: '260px' }}
+              type="text" placeholder="Sede di carico (città)..."
+              value={cittaCarico} onChange={e => setCittaCarico(e.target.value)} />
+            {/* Data carico — larghezza naturale */}
+            <input className="mo-form-control" style={{ flex: '0 0 auto', width: '150px' }}
+              type="date" title="Data di carico"
+              value={dataCarico} onChange={e => setDataCarico(e.target.value)} />
+            {/* Stato */}
+            <select className="mo-form-control" style={{ flex: '0 0 auto', width: '145px' }}
               value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); fetchOrders(search, e.target.value, 1, cittaCarico, dataCarico); }}>
               <option value="">Tutti gli stati</option>
               {Object.entries(STATUS_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
               ))}
             </select>
-          </div>
-          <div className="d-flex gap-2 flex-wrap align-items-center">
-            <input className="mo-form-control" style={{ minWidth: '160px', flex: '1 1 160px' }}
-              type="text" placeholder="Sede di carico (città)..."
-              value={cittaCarico} onChange={e => setCittaCarico(e.target.value)} />
-            <input className="mo-form-control" style={{ width: 'auto' }}
-              type="date" title="Data di carico"
-              value={dataCarico} onChange={e => setDataCarico(e.target.value)} />
-            <button type="submit" className="mo-btn mo-btn-primary">
-              <i className="bi bi-search" />
-              <span className="d-none d-md-inline ms-1">Cerca</span>
+            <button type="submit" className="mo-btn mo-btn-primary" style={{ flex: '0 0 auto' }}>
+              <i className="bi bi-search" /><span className="d-none d-md-inline ms-1">Cerca</span>
             </button>
             {hasFilters && (
-              <button type="button" className="mo-btn mo-btn-ghost" onClick={handleReset}>
-                <i className="bi bi-x-lg" />
-                <span className="d-none d-md-inline ms-1">Azzera</span>
+              <button type="button" className="mo-btn mo-btn-ghost" style={{ flex: '0 0 auto' }} onClick={handleReset}>
+                <i className="bi bi-x-lg" /><span className="d-none d-md-inline ms-1">Azzera</span>
               </button>
             )}
           </div>
