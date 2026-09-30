@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import api from '../api/axios';
@@ -74,7 +74,7 @@ export default function CarriersPage() {
             <div className="d-md-none">
               {carriers.map((c, idx) => (
                 <div key={c.id}
-                  style={{ padding: '0.85rem 1rem', marginBottom: 2, borderRadius: 6, background: idx % 2 === 0 ? '#ffffff' : '#f9fafb', cursor: 'pointer' }}
+                  style={{ padding: '0.85rem 1rem', marginBottom: 8, borderRadius: 8, border: '1px solid #f0f0f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', background: idx % 2 === 0 ? '#ffffff' : '#f9fafb', cursor: 'pointer' }}
                   onClick={() => navigate(`/carriers/${c.id}`)}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -115,7 +115,7 @@ export default function CarriersPage() {
                 <thead>
                   <tr>
                     <th>Denominazione</th>
-                    <th>Città</th>
+                    <th>CittÃ </th>
                     <th>Telefono</th>
                     <th>Email</th>
                     <th>P.IVA</th>
@@ -128,10 +128,10 @@ export default function CarriersPage() {
                   {carriers.map(c => (
                     <tr key={c.id}>
                       <td style={{ fontWeight: 600 }}>{c.denominazione}</td>
-                      <td>{c.citta || <span className="mo-text-muted">—</span>}</td>
-                      <td>{c.telefono || <span className="mo-text-muted">—</span>}</td>
-                      <td>{c.email || <span className="mo-text-muted">—</span>}</td>
-                      <td>{c.partita_iva || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.citta || <span className="mo-text-muted">â€”</span>}</td>
+                      <td>{c.telefono || <span className="mo-text-muted">â€”</span>}</td>
+                      <td>{c.email || <span className="mo-text-muted">â€”</span>}</td>
+                      <td>{c.partita_iva || <span className="mo-text-muted">â€”</span>}</td>
                       <td>
                         <span className="mo-badge mo-badge-confermato">
                           <i className="bi bi-people me-1" />{c.contacts_count}
@@ -168,7 +168,7 @@ export default function CarriersPage() {
 
         {meta && meta.last_page > 1 && (
           <div className="d-flex align-items-center justify-content-between mt-3 pt-3" style={{ borderTop: '1px solid #f3f4f6' }}>
-            <span className="mo-text-muted">{meta.from}–{meta.to} di {meta.total} trasportatori</span>
+            <span className="mo-text-muted">{meta.from}â€“{meta.to} di {meta.total} trasportatori</span>
             <div className="d-flex gap-1">
               <button className="mo-btn mo-btn-ghost" disabled={page === 1}
                 onClick={() => { setPage(p => p - 1); fetchCarriers(search, page - 1); }}>
@@ -186,3 +186,4 @@ export default function CarriersPage() {
     </Layout>
   );
 }
+

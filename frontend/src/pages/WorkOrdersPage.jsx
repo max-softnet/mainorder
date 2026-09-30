@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import usePageTitle from '../hooks/usePageTitle';
@@ -114,18 +114,18 @@ export default function WorkOrdersPage() {
       <div className="mo-card mb-3">
         <form onSubmit={handleSearch}>
           <div className="d-flex gap-2 flex-wrap align-items-center">
-            {/* Numero ordine — larghezza fissa su desktop */}
+            {/* Numero ordine â€” larghezza fissa su desktop */}
             <div className="mo-search-wrap" style={{ flex: '1 1 140px', maxWidth: '220px' }}>
               <i className="bi bi-search" />
               <input className="mo-search w-100" type="text"
-                placeholder="N° ordine..."
+                placeholder="NÂ° ordine..."
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
-            {/* Sede carico — cresce ma non troppo */}
+            {/* Sede carico â€” cresce ma non troppo */}
             <input className="mo-form-control" style={{ flex: '1 1 140px', maxWidth: '260px' }}
-              type="text" placeholder="Sede di carico (città)..."
+              type="text" placeholder="Sede di carico (cittÃ )..."
               value={cittaCarico} onChange={e => setCittaCarico(e.target.value)} />
-            {/* Data carico — larghezza naturale */}
+            {/* Data carico â€” larghezza naturale */}
             <input className="mo-form-control" style={{ flex: '0 0 auto', width: '150px' }}
               type="date" title="Data di carico"
               value={dataCarico} onChange={e => setDataCarico(e.target.value)} />
@@ -164,7 +164,7 @@ export default function WorkOrdersPage() {
                 const ls = luogoScarico(o);
                 return (
                   <div key={o.id} onClick={() => navigate(`/work-orders/${o.id}`)}
-                    style={{ padding: '0.9rem 1rem', marginBottom: 2, borderRadius: 6, cursor: 'pointer', background: idx % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                    style={{ padding: '0.9rem 1rem', marginBottom: 8, borderRadius: 8, border: '1px solid #f0f0f0', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', cursor: 'pointer', background: idx % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: 6 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.9rem', color: 'var(--mo-purple)' }}>
@@ -184,21 +184,21 @@ export default function WorkOrdersPage() {
                       </div>
                     </div>
                     <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#374151', marginBottom: 4 }}>
-                      {o.cliente?.ragione_sociale || '—'}
+                      {o.cliente?.ragione_sociale || 'â€”'}
                     </div>
                     <div style={{ fontSize: '0.78rem', color: '#6b7280', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
                       {o.data_carico && (
                         <span>
                           <i className="bi bi-arrow-up-circle me-1" style={{ color: '#10b981' }} />
                           {new Date(o.data_carico).toLocaleDateString('it-IT')}
-                          {lc && <span style={{ color: '#9ca3af' }}> · {lc}</span>}
+                          {lc && <span style={{ color: '#9ca3af' }}> Â· {lc}</span>}
                         </span>
                       )}
                       {o.data_scarico && (
                         <span>
                           <i className="bi bi-arrow-down-circle me-1" style={{ color: '#ef4444' }} />
                           {new Date(o.data_scarico).toLocaleDateString('it-IT')}
-                          {ls && <span style={{ color: '#9ca3af' }}> · {ls}</span>}
+                          {ls && <span style={{ color: '#9ca3af' }}> Â· {ls}</span>}
                         </span>
                       )}
                     </div>
@@ -209,8 +209,8 @@ export default function WorkOrdersPage() {
                     )}
                     {(o.totale_cliente || o.totale_trasportatore) && (
                       <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 3, display: 'flex', gap: '0.75rem' }}>
-                        {o.totale_cliente && <span>Prezzo CL: <strong style={{ color: '#374151' }}>€ {parseFloat(o.totale_cliente).toFixed(2)}</strong></span>}
-                        {o.totale_trasportatore && <span>Costo TR: <strong style={{ color: '#374151' }}>€ {parseFloat(o.totale_trasportatore).toFixed(2)}</strong></span>}
+                        {o.totale_cliente && <span>Prezzo CL: <strong style={{ color: '#374151' }}>â‚¬ {parseFloat(o.totale_cliente).toFixed(2)}</strong></span>}
+                        {o.totale_trasportatore && <span>Costo TR: <strong style={{ color: '#374151' }}>â‚¬ {parseFloat(o.totale_trasportatore).toFixed(2)}</strong></span>}
                       </div>
                     )}
                   </div>
@@ -223,7 +223,7 @@ export default function WorkOrdersPage() {
               <div className="mo-table-wrap"><table className="mo-table">
                 <thead>
                   <tr>
-                    <th>N° Ordine</th>
+                    <th>NÂ° Ordine</th>
                     <th>Cliente</th>
                     <th>Trasportatore</th>
                     <th>Carico</th>
@@ -250,11 +250,11 @@ export default function WorkOrdersPage() {
                             </Link>
                             {o.totale_cliente && (
                               <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: 2 }}>
-                                Prezzo CL: <span style={{ fontWeight: 600, color: '#374151' }}>€ {parseFloat(o.totale_cliente).toFixed(2)}</span>
+                                Prezzo CL: <span style={{ fontWeight: 600, color: '#374151' }}>â‚¬ {parseFloat(o.totale_cliente).toFixed(2)}</span>
                               </div>
                             )}
                           </div>
-                        ) : '—'}
+                        ) : 'â€”'}
                       </td>
                       <td>
                         {o.carrier ? (
@@ -266,17 +266,17 @@ export default function WorkOrdersPage() {
                             </Link>
                             {o.totale_trasportatore && (
                               <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: 2 }}>
-                                Costo TR: <span style={{ fontWeight: 600, color: '#374151' }}>€ {parseFloat(o.totale_trasportatore).toFixed(2)}</span>
+                                Costo TR: <span style={{ fontWeight: 600, color: '#374151' }}>â‚¬ {parseFloat(o.totale_trasportatore).toFixed(2)}</span>
                               </div>
                             )}
                           </div>
-                        ) : '—'}
+                        ) : 'â€”'}
                       </td>
                       <td>
                         <div>
                           {o.data_carico
                             ? <div style={{ fontSize: '0.85rem' }}>{new Date(o.data_carico).toLocaleDateString('it-IT')}</div>
-                            : <span className="mo-text-muted">—</span>}
+                            : <span className="mo-text-muted">â€”</span>}
                           {luogoCatico(o) && <div className="mo-text-muted" style={{ fontSize: '0.78rem' }}>{luogoCatico(o)}</div>}
                         </div>
                       </td>
@@ -284,7 +284,7 @@ export default function WorkOrdersPage() {
                         <div>
                           {o.data_scarico
                             ? <div style={{ fontSize: '0.85rem' }}>{new Date(o.data_scarico).toLocaleDateString('it-IT')}</div>
-                            : <span className="mo-text-muted">—</span>}
+                            : <span className="mo-text-muted">â€”</span>}
                           {luogoScarico(o) && <div className="mo-text-muted" style={{ fontSize: '0.78rem' }}>{luogoScarico(o)}</div>}
                         </div>
                       </td>
@@ -329,7 +329,7 @@ export default function WorkOrdersPage() {
         {meta && meta.last_page > 1 && (
           <div className="d-flex align-items-center justify-content-between mt-3 pt-3"
             style={{ borderTop: '1px solid #f3f4f6' }}>
-            <span className="mo-text-muted" style={{ fontSize: '0.82rem' }}>{meta.from}–{meta.to} di {meta.total}</span>
+            <span className="mo-text-muted" style={{ fontSize: '0.82rem' }}>{meta.from}â€“{meta.to} di {meta.total}</span>
             <div className="d-flex gap-1">
               <button className="mo-btn mo-btn-ghost" disabled={page === 1}
                 onClick={() => { setPage(p => p - 1); fetchOrders(search, statusFilter, page - 1); }}>
@@ -345,7 +345,7 @@ export default function WorkOrdersPage() {
         )}
       </div>
 
-      {/* FAB Nuovo ordine — solo mobile */}
+      {/* FAB Nuovo ordine â€” solo mobile */}
       {canWrite && (
         <button
           className="d-md-none"
@@ -366,3 +366,4 @@ export default function WorkOrdersPage() {
     </Layout>
   );
 }
+
