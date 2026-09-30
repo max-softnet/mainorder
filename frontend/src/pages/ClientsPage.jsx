@@ -124,7 +124,7 @@ export default function ClientsPage() {
                   <tr>
                     <th>Ragione Sociale</th>
                     <th>Referente</th>
-                    <th>CittÃ </th>
+                    <th>Città</th>
                     <th>Email</th>
                     <th>Telefono</th>
                     <th>P.IVA</th>

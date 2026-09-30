@@ -115,7 +115,7 @@ export default function CarriersPage() {
                 <thead>
                   <tr>
                     <th>Denominazione</th>
-                    <th>CittÃ </th>
+                    <th>Città</th>
                     <th>Telefono</th>
                     <th>Email</th>
                     <th>P.IVA</th>

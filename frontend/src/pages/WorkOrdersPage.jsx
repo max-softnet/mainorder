@@ -118,12 +118,12 @@ export default function WorkOrdersPage() {
             <div className="mo-search-wrap" style={{ flex: '1 1 140px', maxWidth: '220px' }}>
               <i className="bi bi-search" />
               <input className="mo-search w-100" type="text"
-                placeholder="NÂ° ordine..."
+                placeholder="Nº ordine..."
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
             {/* Sede carico — cresce ma non troppo */}
             <input className="mo-form-control" style={{ flex: '1 1 140px', maxWidth: '260px' }}
-              type="text" placeholder="Sede di carico (cittÃ )..."
+              type="text" placeholder="Sede di carico (città)..."
               value={cittaCarico} onChange={e => setCittaCarico(e.target.value)} />
             {/* Data carico — larghezza naturale */}
             <input className="mo-form-control" style={{ flex: '0 0 auto', width: '150px' }}
@@ -191,14 +191,14 @@ export default function WorkOrdersPage() {
                         <span>
                           <i className="bi bi-arrow-up-circle me-1" style={{ color: '#10b981' }} />
                           {new Date(o.data_carico).toLocaleDateString('it-IT')}
-                          {lc && <span style={{ color: '#9ca3af' }}> Â· {lc}</span>}
+                          {lc && <span style={{ color: '#9ca3af' }}> · {lc}</span>}
                         </span>
                       )}
                       {o.data_scarico && (
                         <span>
                           <i className="bi bi-arrow-down-circle me-1" style={{ color: '#ef4444' }} />
                           {new Date(o.data_scarico).toLocaleDateString('it-IT')}
-                          {ls && <span style={{ color: '#9ca3af' }}> Â· {ls}</span>}
+                          {ls && <span style={{ color: '#9ca3af' }}> · {ls}</span>}
                         </span>
                       )}
                     </div>
@@ -223,7 +223,7 @@ export default function WorkOrdersPage() {
               <div className="mo-table-wrap"><table className="mo-table">
                 <thead>
                   <tr>
-                    <th>NÂ° Ordine</th>
+                    <th>N° Ordine</th>
                     <th>Cliente</th>
                     <th>Trasportatore</th>
                     <th>Carico</th>
