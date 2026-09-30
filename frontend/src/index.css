@@ -119,7 +119,8 @@ body {
   border: none;
   border-radius: 12px;
   padding: 0.5rem 1rem 0.5rem 2.5rem;
-  width: 280px;
+  width: 100%;
+  min-width: 0;
   font-size: 0.9rem;
   color: var(--mo-text);
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
