@@ -204,13 +204,11 @@ export default function WorkOrderViewPage() {
 
   return (
     <Layout>
-      {/* Header */}
-      <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+      {/* Header — Desktop */}
+      <div className="d-none d-md-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
         <div className="d-flex align-items-center gap-3">
           <div>
-            <h1 className="mo-page-title mb-1">
-              {order.numero_ordine || order.numero_tmp}
-            </h1>
+            <h1 className="mo-page-title mb-1">{order.numero_ordine || order.numero_tmp}</h1>
             <span className={`mo-badge ${STATUS_BADGE[order.status] || 'mo-badge-bozza'}`}>
               {STATUS_LABELS[order.status] || order.status}
             </span>
@@ -239,8 +237,7 @@ export default function WorkOrderViewPage() {
               : {};
             return (
               <button key={s} className="mo-btn mo-btn-outline" disabled={saving}
-                style={btnStyle}
-                onClick={() => handleStatusChange(s)}>
+                style={btnStyle} onClick={() => handleStatusChange(s)}>
                 {s === 'confermato'
                   ? <><i className="bi bi-send me-1" />Conferma e invia ordine</>
                   : <>→ {STATUS_LABELS[s]}</>}
@@ -255,6 +252,65 @@ export default function WorkOrderViewPage() {
               <i className="bi bi-pencil me-1" /> Modifica
             </button>
           )}
+        </div>
+      </div>
+
+      {/* Header — Mobile */}
+      <div className="d-md-none mb-3">
+        {/* Riga 1: titolo + badge + Modifica */}
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <div>
+            <h1 className="mo-page-title mb-1" style={{ fontSize: '1.1rem' }}>
+              {order.numero_ordine || order.numero_tmp}
+            </h1>
+            <span className={`mo-badge ${STATUS_BADGE[order.status] || 'mo-badge-bozza'}`}>
+              {STATUS_LABELS[order.status] || order.status}
+            </span>
+          </div>
+          {canEdit && (
+            <button className="mo-btn mo-btn-primary" onClick={() => navigate(`/work-orders/${id}/edit`)}>
+              <i className="bi bi-pencil me-1" /> Modifica
+            </button>
+          )}
+        </div>
+        {/* Riga 2: transizioni di stato */}
+        {canEdit && STATUS_TRANSITIONS[order.status]?.length > 0 && (
+          <div className="d-flex gap-2 mb-2">
+            {STATUS_TRANSITIONS[order.status].map(s => {
+              const btnStyle = s === 'annullato'
+                ? { background: '#dc2626', color: '#fff', border: 'none', flex: 1 }
+                : s === 'chiuso'
+                ? { background: '#16a34a', color: '#fff', border: 'none', flex: 1 }
+                : { flex: 1 };
+              return (
+                <button key={s} className="mo-btn mo-btn-outline" disabled={saving}
+                  style={btnStyle} onClick={() => handleStatusChange(s)}>
+                  {s === 'confermato'
+                    ? <><i className="bi bi-send me-1" />Conferma e invia</>
+                    : <>→ {STATUS_LABELS[s]}</>}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {/* Riga 3: azioni secondarie */}
+        <div className="d-flex gap-2">
+          <button className="mo-btn mo-btn-ghost" style={{ flex: 1 }} onClick={() => navigate('/work-orders')}>
+            <i className="bi bi-arrow-left me-1" /> Lista
+          </button>
+          {canEdit && (
+            <button className="mo-btn mo-btn-ghost" style={{ flex: 1 }} onClick={handleDownloadPdf}>
+              <i className="bi bi-file-earmark-pdf me-1" /> PDF
+            </button>
+          )}
+          {canEdit && order.status === 'confermato' && (
+            <button className="mo-btn mo-btn-ghost" style={{ flex: 1, color: '#2563eb' }} disabled={saving} onClick={handleResendEmail}>
+              <i className="bi bi-envelope me-1" /> Mail
+            </button>
+          )}
+          <button className="mo-btn mo-btn-ghost" style={{ flex: 1 }} onClick={handleClone}>
+            <i className="bi bi-copy me-1" /> Clona
+          </button>
         </div>
       </div>
 
