@@ -36,6 +36,9 @@ class WorkOrderController extends Controller
             ->when($request->data_carico, fn($q) => $q->whereDate('data_carico', $request->data_carico))
             ->when($request->data_da, fn($q) => $q->whereDate('data_carico', '>=', $request->data_da))
             ->when($request->data_a, fn($q) => $q->whereDate('data_carico', '<=', $request->data_a))
+            ->when($request->citta_carico, fn($q) => $q->whereHas('stops', fn($sq) =>
+                $sq->where('tipo', 'carico')->where('citta', 'like', "%{$request->citta_carico}%")
+            ))
             ->when($request->search, fn($q) => $q
                 ->where('numero_ordine', 'like', "%{$request->search}%")
                 ->orWhere('numero_tmp', 'like', "%{$request->search}%")

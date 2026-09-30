@@ -24,14 +24,23 @@ export default function WorkOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [cittaCarico, setCittaCarico] = useState('');
+  const [dataCarico, setDataCarico] = useState('');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
 
-  const fetchOrders = async (s = search, st = statusFilter, p = page) => {
+  const fetchOrders = async (s = search, st = statusFilter, p = page, cc = cittaCarico, dc = dataCarico) => {
     setLoading(true);
     try {
       const { data } = await api.get('/work-orders', {
-        params: { search: s || undefined, status: st || undefined, page: p, with_stops: 1 },
+        params: {
+          search: s || undefined,
+          status: st || undefined,
+          page: p,
+          with_stops: 1,
+          citta_carico: cc || undefined,
+          data_carico: dc || undefined,
+        },
       });
       setOrders(data.data);
       setMeta(data);
@@ -45,8 +54,15 @@ export default function WorkOrdersPage() {
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchOrders(search, statusFilter, 1);
+    fetchOrders(search, statusFilter, 1, cittaCarico, dataCarico);
   };
+
+  const handleReset = () => {
+    setSearch(''); setStatusFilter(''); setCittaCarico(''); setDataCarico('');
+    fetchOrders('', '', 1, '', '');
+  };
+
+  const hasFilters = search || statusFilter || cittaCarico || dataCarico;
 
   const handleDelete = async (id) => {
     if (!confirm('Eliminare questo ordine?')) return;
@@ -96,29 +112,40 @@ export default function WorkOrdersPage() {
 
       {/* Filtri */}
       <div className="mo-card mb-3">
-        <form onSubmit={handleSearch} className="d-flex gap-2 flex-wrap">
-          <div className="mo-search-wrap flex-grow-1">
-            <i className="bi bi-search" />
-            <input className="mo-search w-100" type="text"
-              placeholder="Cerca per numero ordine..."
-              value={search} onChange={e => setSearch(e.target.value)} />
+        <form onSubmit={handleSearch}>
+          <div className="d-flex gap-2 flex-wrap mb-2">
+            <div className="mo-search-wrap flex-grow-1">
+              <i className="bi bi-search" />
+              <input className="mo-search w-100" type="text"
+                placeholder="Cerca per numero ordine..."
+                value={search} onChange={e => setSearch(e.target.value)} />
+            </div>
+            <select className="mo-form-control" style={{ width: 'auto', minWidth: '140px' }}
+              value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); fetchOrders(search, e.target.value, 1, cittaCarico, dataCarico); }}>
+              <option value="">Tutti gli stati</option>
+              {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
           </div>
-          <select className="mo-form-control" style={{ width: 'auto', minWidth: '140px' }}
-            value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); fetchOrders(search, e.target.value, 1); }}>
-            <option value="">Tutti gli stati</option>
-            {Object.entries(STATUS_LABELS).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
-          </select>
-          <button type="submit" className="mo-btn mo-btn-primary">
-            <i className="bi bi-search d-md-none" /><span className="d-none d-md-inline">Cerca</span>
-          </button>
-          {(search || statusFilter) && (
-            <button type="button" className="mo-btn mo-btn-ghost"
-              onClick={() => { setSearch(''); setStatusFilter(''); fetchOrders('', '', 1); }}>
-              <i className="bi bi-x-lg d-md-none" /><span className="d-none d-md-inline">Azzera</span>
+          <div className="d-flex gap-2 flex-wrap align-items-center">
+            <input className="mo-form-control" style={{ minWidth: '160px', flex: '1 1 160px' }}
+              type="text" placeholder="Sede di carico (città)..."
+              value={cittaCarico} onChange={e => setCittaCarico(e.target.value)} />
+            <input className="mo-form-control" style={{ width: 'auto' }}
+              type="date" title="Data di carico"
+              value={dataCarico} onChange={e => setDataCarico(e.target.value)} />
+            <button type="submit" className="mo-btn mo-btn-primary">
+              <i className="bi bi-search" />
+              <span className="d-none d-md-inline ms-1">Cerca</span>
             </button>
-          )}
+            {hasFilters && (
+              <button type="button" className="mo-btn mo-btn-ghost" onClick={handleReset}>
+                <i className="bi bi-x-lg" />
+                <span className="d-none d-md-inline ms-1">Azzera</span>
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -178,7 +205,12 @@ export default function WorkOrdersPage() {
                     {o.carrier?.denominazione && (
                       <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: 3 }}>
                         <i className="bi bi-truck me-1" />{o.carrier.denominazione}
-                        {o.totale_cliente && <span style={{ marginLeft: 8, fontWeight: 600, color: '#374151' }}>€ {parseFloat(o.totale_cliente).toFixed(2)}</span>}
+                      </div>
+                    )}
+                    {(o.totale_cliente || o.totale_trasportatore) && (
+                      <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 3, display: 'flex', gap: '0.75rem' }}>
+                        {o.totale_cliente && <span>Prezzo CL: <strong style={{ color: '#374151' }}>€ {parseFloat(o.totale_cliente).toFixed(2)}</strong></span>}
+                        {o.totale_trasportatore && <span>Costo TR: <strong style={{ color: '#374151' }}>€ {parseFloat(o.totale_trasportatore).toFixed(2)}</strong></span>}
                       </div>
                     )}
                   </div>
@@ -192,12 +224,10 @@ export default function WorkOrdersPage() {
                 <thead>
                   <tr>
                     <th>N° Ordine</th>
-                    <th>Data</th>
                     <th>Cliente</th>
                     <th>Trasportatore</th>
                     <th>Carico</th>
                     <th>Scarico</th>
-                    <th>Totale Cliente</th>
                     <th>Stato</th>
                     <th></th>
                   </tr>
@@ -210,23 +240,36 @@ export default function WorkOrdersPage() {
                           {o.numero_ordine || o.numero_tmp}
                         </Link>
                       </td>
-                      <td>{o.data_ordine ? new Date(o.data_ordine).toLocaleDateString('it-IT') : '—'}</td>
                       <td>
                         {o.cliente ? (
-                          <Link to={`/clients/${o.cliente_id}`} style={{ color: 'inherit', textDecoration: 'none' }}
-                            onMouseEnter={e => e.currentTarget.style.color = 'var(--mo-purple)'}
-                            onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>
-                            {o.cliente.ragione_sociale}
-                          </Link>
+                          <div>
+                            <Link to={`/clients/${o.cliente_id}`} style={{ color: 'inherit', textDecoration: 'none' }}
+                              onMouseEnter={e => e.currentTarget.style.color = 'var(--mo-purple)'}
+                              onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>
+                              {o.cliente.ragione_sociale}
+                            </Link>
+                            {o.totale_cliente && (
+                              <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: 2 }}>
+                                Prezzo CL: <span style={{ fontWeight: 600, color: '#374151' }}>€ {parseFloat(o.totale_cliente).toFixed(2)}</span>
+                              </div>
+                            )}
+                          </div>
                         ) : '—'}
                       </td>
                       <td>
                         {o.carrier ? (
-                          <Link to={`/carriers/${o.carrier_id}`} style={{ color: 'inherit', textDecoration: 'none' }}
-                            onMouseEnter={e => e.currentTarget.style.color = 'var(--mo-purple)'}
-                            onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>
-                            {o.carrier.denominazione}
-                          </Link>
+                          <div>
+                            <Link to={`/carriers/${o.carrier_id}`} style={{ color: 'inherit', textDecoration: 'none' }}
+                              onMouseEnter={e => e.currentTarget.style.color = 'var(--mo-purple)'}
+                              onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>
+                              {o.carrier.denominazione}
+                            </Link>
+                            {o.totale_trasportatore && (
+                              <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: 2 }}>
+                                Costo TR: <span style={{ fontWeight: 600, color: '#374151' }}>€ {parseFloat(o.totale_trasportatore).toFixed(2)}</span>
+                              </div>
+                            )}
+                          </div>
                         ) : '—'}
                       </td>
                       <td>
@@ -244,11 +287,6 @@ export default function WorkOrdersPage() {
                             : <span className="mo-text-muted">—</span>}
                           {luogoScarico(o) && <div className="mo-text-muted" style={{ fontSize: '0.78rem' }}>{luogoScarico(o)}</div>}
                         </div>
-                      </td>
-                      <td>
-                        {o.totale_cliente
-                          ? <span style={{ fontWeight: 600 }}>€ {parseFloat(o.totale_cliente).toFixed(2)}</span>
-                          : <span className="mo-text-muted">—</span>}
                       </td>
                       <td>
                         <span className={`mo-badge ${STATUS_BADGE[o.status] || 'mo-badge-bozza'}`}>
