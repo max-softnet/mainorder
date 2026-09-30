@@ -49,21 +49,20 @@ export default function ClientsPage() {
 
       {/* Search */}
       <div className="mo-card mb-3">
-        <form onSubmit={handleSearch} className="d-flex gap-2">
-          <div className="mo-search-wrap flex-grow-1">
+        <form onSubmit={handleSearch} className="d-flex gap-2 flex-wrap">
+          <div className="mo-search-wrap" style={{ flex: '1 1 180px', minWidth: 0 }}>
             <i className="bi bi-search" />
             <input
               className="mo-search w-100"
-              style={{ width: '100%' }}
               type="text"
-              placeholder="Cerca per ragione sociale, email, referente..."
+              placeholder="Cerca ragione sociale, email..."
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
           </div>
-          <button type="submit" className="mo-btn mo-btn-primary">Cerca</button>
+          <button type="submit" className="mo-btn mo-btn-primary" style={{ flex: '0 0 auto' }}>Cerca</button>
           {search && (
-            <button type="button" className="mo-btn mo-btn-ghost" onClick={() => { setSearch(''); fetchClients('', 1); }}>
+            <button type="button" className="mo-btn mo-btn-ghost" style={{ flex: '0 0 auto' }} onClick={() => { setSearch(''); fetchClients('', 1); }}>
               Azzera
             </button>
           )}
