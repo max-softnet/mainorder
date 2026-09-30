@@ -175,8 +175,8 @@
 
 {{-- INDIRIZZO CARICO / SCARICO --}}
 @php
-  $indirizzoCarico = $carichi->map(fn($s) => trim(implode(', ', array_filter([$s->ragione_sociale, $s->indirizzo_completo]))))->filter()->implode(' — ');
-  $indirizzoScarico = $scarichi->map(fn($s) => trim(implode(', ', array_filter([$s->ragione_sociale, $s->indirizzo_completo]))))->filter()->implode(' — ');
+  $indirizzoCarico = $carichi->map(fn($s) => $s->indirizzo_completo)->filter()->implode(' — ');
+  $indirizzoScarico = $scarichi->map(fn($s) => $s->indirizzo_completo)->filter()->implode(' — ');
   if (!$indirizzoCarico) $indirizzoCarico = $stopCarico?->indirizzo_completo ?? '';
   if (!$indirizzoScarico) $indirizzoScarico = $stopScarico?->indirizzo_completo ?? '';
 @endphp
