@@ -159,12 +159,12 @@ export default function WorkOrdersPage() {
           <>
             {/* Mobile: card list */}
             <div className="d-md-none">
-              {orders.map(o => {
+              {orders.map((o, idx) => {
                 const lc = luogoCatico(o);
                 const ls = luogoScarico(o);
                 return (
                   <div key={o.id} onClick={() => navigate(`/work-orders/${o.id}`)}
-                    style={{ padding: '0.9rem 1rem', borderBottom: '1px solid #f3f4f6', cursor: 'pointer' }}>
+                    style={{ padding: '0.9rem 1rem', marginBottom: 2, borderRadius: 6, cursor: 'pointer', background: idx % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem', marginBottom: 6 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                         <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.9rem', color: 'var(--mo-purple)' }}>

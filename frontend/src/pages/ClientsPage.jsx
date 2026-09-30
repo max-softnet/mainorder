@@ -77,58 +77,103 @@ export default function ClientsPage() {
         ) : clients.length === 0 ? (
           <div className="text-center py-4 mo-text-muted">Nessun cliente trovato.</div>
         ) : (
-          <div className="mo-table-wrap"><table className="mo-table">
-            <thead>
-              <tr>
-                <th>Ragione Sociale</th>
-                <th>Referente</th>
-                <th>Città</th>
-                <th>Email</th>
-                <th>Telefono</th>
-                <th>P.IVA</th>
-                <th>Stato</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {clients.map(c => (
-                <tr key={c.id}>
-                  <td>
-                    <span style={{ fontWeight: 600 }}>{c.ragione_sociale}</span>
-                    {c.supplemento_carico || c.supplemento_scarico ? (
-                      <span className="mo-badge mo-badge-confermato ms-2" style={{ fontSize: '0.7rem' }}>suppl.</span>
-                    ) : null}
-                  </td>
-                  <td>{c.referente || <span className="mo-text-muted">—</span>}</td>
-                  <td>{c.citta || <span className="mo-text-muted">—</span>}</td>
-                  <td>{c.email || <span className="mo-text-muted">—</span>}</td>
-                  <td>{c.telefono || <span className="mo-text-muted">—</span>}</td>
-                  <td>{c.partita_iva || <span className="mo-text-muted">—</span>}</td>
-                  <td>
-                    <span className={`mo-badge ${c.active ? 'mo-badge-consegnato' : 'mo-badge-annullato'}`}>
-                      {c.active ? 'Attivo' : 'Disattivo'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="d-flex gap-1 justify-content-end">
-                      <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem' }}
-                        onClick={() => navigate(`/clients/${c.id}`)}>
-                        <i className="bi bi-eye" />
+          <>
+            {/* Mobile cards */}
+            <div className="d-md-none">
+              {clients.map((c, idx) => (
+                <div key={c.id}
+                  style={{ padding: '0.85rem 1rem', marginBottom: 2, borderRadius: 6, background: idx % 2 === 0 ? '#ffffff' : '#f9fafb', cursor: 'pointer' }}
+                  onClick={() => navigate(`/clients/${c.id}`)}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: 3 }}>
+                        <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{c.ragione_sociale}</span>
+                        <span className={`mo-badge ${c.active ? 'mo-badge-consegnato' : 'mo-badge-annullato'}`} style={{ fontSize: '0.68rem' }}>
+                          {c.active ? 'Attivo' : 'Disattivo'}
+                        </span>
+                        {(c.supplemento_carico || c.supplemento_scarico) && (
+                          <span className="mo-badge mo-badge-confermato" style={{ fontSize: '0.68rem' }}>suppl.</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#6b7280', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        {c.citta && <span><i className="bi bi-geo-alt me-1" />{c.citta}</span>}
+                        {c.referente && <span><i className="bi bi-person me-1" />{c.referente}</span>}
+                      </div>
+                      {(c.email || c.telefono) && (
+                        <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: 2 }}>
+                          {c.email && <span className="me-3"><i className="bi bi-envelope me-1" />{c.email}</span>}
+                          {c.telefono && <span><i className="bi bi-telephone me-1" />{c.telefono}</span>}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.2rem', flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                      <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem' }} onClick={() => navigate(`/clients/${c.id}/edit`)}>
+                        <i className="bi bi-pencil" style={{ fontSize: '0.85rem' }} />
                       </button>
-                      <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem' }}
-                        onClick={() => navigate(`/clients/${c.id}/edit`)}>
-                        <i className="bi bi-pencil" />
-                      </button>
-                      <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem', color: '#ef4444' }}
-                        onClick={() => handleDelete(c.id)}>
-                        <i className="bi bi-trash" />
+                      <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem', color: '#ef4444' }} onClick={() => handleDelete(c.id)}>
+                        <i className="bi bi-trash" style={{ fontSize: '0.85rem' }} />
                       </button>
                     </div>
-                  </td>
-                </tr>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table></div>
+            </div>
+            {/* Desktop table */}
+            <div className="d-none d-md-block">
+              <div className="mo-table-wrap"><table className="mo-table">
+                <thead>
+                  <tr>
+                    <th>Ragione Sociale</th>
+                    <th>Referente</th>
+                    <th>Città</th>
+                    <th>Email</th>
+                    <th>Telefono</th>
+                    <th>P.IVA</th>
+                    <th>Stato</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clients.map(c => (
+                    <tr key={c.id}>
+                      <td>
+                        <span style={{ fontWeight: 600 }}>{c.ragione_sociale}</span>
+                        {c.supplemento_carico || c.supplemento_scarico ? (
+                          <span className="mo-badge mo-badge-confermato ms-2" style={{ fontSize: '0.7rem' }}>suppl.</span>
+                        ) : null}
+                      </td>
+                      <td>{c.referente || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.citta || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.email || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.telefono || <span className="mo-text-muted">—</span>}</td>
+                      <td>{c.partita_iva || <span className="mo-text-muted">—</span>}</td>
+                      <td>
+                        <span className={`mo-badge ${c.active ? 'mo-badge-consegnato' : 'mo-badge-annullato'}`}>
+                          {c.active ? 'Attivo' : 'Disattivo'}
+                        </span>
+                      </td>
+                      <td>
+                        <div className="d-flex gap-1 justify-content-end">
+                          <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem' }}
+                            onClick={() => navigate(`/clients/${c.id}`)}>
+                            <i className="bi bi-eye" />
+                          </button>
+                          <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem' }}
+                            onClick={() => navigate(`/clients/${c.id}/edit`)}>
+                            <i className="bi bi-pencil" />
+                          </button>
+                          <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem', color: '#ef4444' }}
+                            onClick={() => handleDelete(c.id)}>
+                            <i className="bi bi-trash" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table></div>
+            </div>
+          </>
         )}
 
         {/* Paginazione */}

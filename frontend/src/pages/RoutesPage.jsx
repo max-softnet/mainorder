@@ -113,95 +113,109 @@ function ClientRoutesTab({ isAdmin }) {
             <div className="mt-2 mo-text-muted">Nessuna tratta cliente. Si crea automaticamente alla conferma degli ordini.</div>
           </div>
         ) : (
-          <div className="mo-table-wrap">
-            <table className="mo-table">
-              <thead>
-                <tr>
-                  <th>Da</th>
-                  <th>A</th>
-                  <th>Cliente</th>
-                  <th>Prezzo (€)</th>
-                  <th>Ultimo aggiorn.</th>
-                  <th>Note</th>
-                  {isAdmin && <th></th>}
-                </tr>
-              </thead>
-              <tbody>
-                {routes.map(r => (
-                  <tr key={r.id}>
-                    <td>
-                      <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>
-                        {r.provincia_da}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>
-                        {r.provincia_a}
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: 500 }}>{r.cliente?.ragione_sociale || '—'}</td>
-                    {editing === r.id ? (
-                      <>
-                        <td>
-                          <input className="mo-form-control" type="number" step="0.01" min="0"
-                            style={{ width: 110 }} value={editForm.prezzo}
-                            onChange={e => setEditForm(f => ({ ...f, prezzo: e.target.value }))} />
-                        </td>
-                        <td>—</td>
-                        <td>
-                          <input className="mo-form-control" type="text"
-                            style={{ width: 140 }} value={editForm.note} placeholder="Note..."
-                            onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
-                        </td>
-                        <td>
-                          <div className="d-flex gap-1">
-                            <button className="mo-btn mo-btn-primary" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }}
-                              onClick={() => saveEdit(r.id)} disabled={saving}>
-                              <i className="bi bi-check-lg" />
-                            </button>
-                            <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }}
-                              onClick={() => setEditing(null)}>
-                              <i className="bi bi-x-lg" />
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td style={{ fontWeight: 600 }}>€ {fmt(r.prezzo)}</td>
-                        <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>
-                          {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
-                          {r.last_work_order_id && (
-                            <button className="mo-btn mo-btn-ghost ms-1" style={{ padding: '0 0.3rem', fontSize: '0.75rem' }}
-                              onClick={() => navigate(`/work-orders/${r.last_work_order_id}`)}>
-                              <i className="bi bi-box-arrow-up-right" />
-                            </button>
-                          )}
-                        </td>
-                        <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>
-                          {r.note || <span style={{ opacity: 0.4 }}>—</span>}
-                        </td>
-                        {isAdmin && (
+          <>
+            {/* Mobile cards — tratte clienti */}
+            <div className="d-md-none">
+              {routes.map((r, idx) => (
+                <div key={r.id} style={{ padding: '0.85rem 1rem', marginBottom: 2, borderRadius: 6, background: idx % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: 4, flexWrap: 'wrap' }}>
+                        <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.provincia_da}</span>
+                        <i className="bi bi-arrow-right" style={{ color: '#9ca3af', fontSize: '0.75rem' }} />
+                        <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.provincia_a}</span>
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#10b981' }}>€ {fmt(r.prezzo)}</span>
+                      </div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, marginBottom: 2 }}>{r.cliente?.ragione_sociale || '—'}</div>
+                      {r.note && <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{r.note}</div>}
+                      <div style={{ fontSize: '0.72rem', color: '#d1d5db', marginTop: 2 }}>
+                        Aggiorn. {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
+                      </div>
+                    </div>
+                    {isAdmin && editing !== r.id && (
+                      <div style={{ display: 'flex', gap: '0.2rem', flexShrink: 0 }}>
+                        <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem' }} onClick={() => startEdit(r)}>
+                          <i className="bi bi-pencil" style={{ fontSize: '0.85rem' }} />
+                        </button>
+                        <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem', color: '#ef4444' }} onClick={() => handleDelete(r.id)}>
+                          <i className="bi bi-trash" style={{ fontSize: '0.85rem' }} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {editing === r.id && (
+                    <div style={{ marginTop: 8, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 110 }}
+                        placeholder="Prezzo €" value={editForm.prezzo} onChange={e => setEditForm(f => ({ ...f, prezzo: e.target.value }))} />
+                      <input className="mo-form-control" type="text" style={{ flex: '1 1 120px' }}
+                        placeholder="Note..." value={editForm.note} onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
+                      <button className="mo-btn mo-btn-primary" style={{ padding: '0.25rem 0.6rem' }} onClick={() => saveEdit(r.id)} disabled={saving}>
+                        <i className="bi bi-check-lg" />
+                      </button>
+                      <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.6rem' }} onClick={() => setEditing(null)}>
+                        <i className="bi bi-x-lg" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {/* Desktop table */}
+            <div className="d-none d-md-block mo-table-wrap">
+              <table className="mo-table">
+                <thead>
+                  <tr>
+                    <th>Da</th>
+                    <th>A</th>
+                    <th>Cliente</th>
+                    <th>Prezzo (€)</th>
+                    <th>Ultimo aggiorn.</th>
+                    <th>Note</th>
+                    {isAdmin && <th></th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {routes.map(r => (
+                    <tr key={r.id}>
+                      <td><span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>{r.provincia_da}</span></td>
+                      <td><span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>{r.provincia_a}</span></td>
+                      <td style={{ fontWeight: 500 }}>{r.cliente?.ragione_sociale || '—'}</td>
+                      {editing === r.id ? (
+                        <>
+                          <td><input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 110 }} value={editForm.prezzo} onChange={e => setEditForm(f => ({ ...f, prezzo: e.target.value }))} /></td>
+                          <td>—</td>
+                          <td><input className="mo-form-control" type="text" style={{ width: 140 }} value={editForm.note} placeholder="Note..." onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} /></td>
                           <td>
-                            <div className="d-flex gap-1 justify-content-end">
-                              <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem' }}
-                                onClick={() => startEdit(r)} title="Modifica prezzo">
-                                <i className="bi bi-pencil" />
-                              </button>
-                              <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem', color: '#ef4444' }}
-                                onClick={() => handleDelete(r.id)} title="Elimina tratta">
-                                <i className="bi bi-trash" />
-                              </button>
+                            <div className="d-flex gap-1">
+                              <button className="mo-btn mo-btn-primary" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }} onClick={() => saveEdit(r.id)} disabled={saving}><i className="bi bi-check-lg" /></button>
+                              <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }} onClick={() => setEditing(null)}><i className="bi bi-x-lg" /></button>
                             </div>
                           </td>
-                        )}
-                      </>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        </>
+                      ) : (
+                        <>
+                          <td style={{ fontWeight: 600 }}>€ {fmt(r.prezzo)}</td>
+                          <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>
+                            {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
+                            {r.last_work_order_id && <button className="mo-btn mo-btn-ghost ms-1" style={{ padding: '0 0.3rem', fontSize: '0.75rem' }} onClick={() => navigate(`/work-orders/${r.last_work_order_id}`)}><i className="bi bi-box-arrow-up-right" /></button>}
+                          </td>
+                          <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>{r.note || <span style={{ opacity: 0.4 }}>—</span>}</td>
+                          {isAdmin && (
+                            <td>
+                              <div className="d-flex gap-1 justify-content-end">
+                                <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem' }} onClick={() => startEdit(r)}><i className="bi bi-pencil" /></button>
+                                <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem', color: '#ef4444' }} onClick={() => handleDelete(r.id)}><i className="bi bi-trash" /></button>
+                              </div>
+                            </td>
+                          )}
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {meta && meta.last_page > 1 && (
@@ -329,104 +343,115 @@ function CarrierRoutesTab({ isAdmin }) {
             <div className="mt-2 mo-text-muted">Nessuna tratta trasportatore. Si crea automaticamente alla conferma degli ordini.</div>
           </div>
         ) : (
-          <div className="mo-table-wrap">
-            <table className="mo-table">
-              <thead>
-                <tr>
-                  <th>Da</th>
-                  <th>A</th>
-                  <th>Trasportatore</th>
-                  <th>Km</th>
-                  <th>Costo (€)</th>
-                  <th>Ultimo aggiorn.</th>
-                  <th>Note</th>
-                  {isAdmin && <th></th>}
-                </tr>
-              </thead>
-              <tbody>
-                {routes.map(r => (
-                  <tr key={r.id}>
-                    <td>
-                      <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>
-                        {r.provincia_da}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>
-                        {r.provincia_a}
-                      </span>
-                    </td>
-                    <td style={{ fontWeight: 500 }}>{r.carrier?.denominazione || '—'}</td>
-                    {editing === r.id ? (
-                      <>
-                        <td>
-                          <input className="mo-form-control" type="number" step="0.01" min="0"
-                            style={{ width: 90 }} value={editForm.km_totali} placeholder="km"
-                            onChange={e => setEditForm(f => ({ ...f, km_totali: e.target.value }))} />
-                        </td>
-                        <td>
-                          <input className="mo-form-control" type="number" step="0.01" min="0"
-                            style={{ width: 110 }} value={editForm.costo}
-                            onChange={e => setEditForm(f => ({ ...f, costo: e.target.value }))} />
-                        </td>
-                        <td>—</td>
-                        <td>
-                          <input className="mo-form-control" type="text"
-                            style={{ width: 140 }} value={editForm.note} placeholder="Note..."
-                            onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
-                        </td>
-                        <td>
-                          <div className="d-flex gap-1">
-                            <button className="mo-btn mo-btn-primary" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }}
-                              onClick={() => saveEdit(r.id)} disabled={saving}>
-                              <i className="bi bi-check-lg" />
-                            </button>
-                            <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }}
-                              onClick={() => setEditing(null)}>
-                              <i className="bi bi-x-lg" />
-                            </button>
-                          </div>
-                        </td>
-                      </>
-                    ) : (
-                      <>
-                        <td className="mo-text-muted" style={{ fontSize: '0.85rem' }}>
-                          {r.km_totali ? `${parseFloat(r.km_totali).toFixed(0)} km` : '—'}
-                        </td>
-                        <td style={{ fontWeight: 600 }}>€ {fmt(r.costo)}</td>
-                        <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>
-                          {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
-                          {r.last_work_order_id && (
-                            <button className="mo-btn mo-btn-ghost ms-1" style={{ padding: '0 0.3rem', fontSize: '0.75rem' }}
-                              onClick={() => navigate(`/work-orders/${r.last_work_order_id}`)}>
-                              <i className="bi bi-box-arrow-up-right" />
-                            </button>
-                          )}
-                        </td>
-                        <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>
-                          {r.note || <span style={{ opacity: 0.4 }}>—</span>}
-                        </td>
-                        {isAdmin && (
+          <>
+            {/* Mobile cards — tratte trasportatori */}
+            <div className="d-md-none">
+              {routes.map((r, idx) => (
+                <div key={r.id} style={{ padding: '0.85rem 1rem', marginBottom: 2, borderRadius: 6, background: idx % 2 === 0 ? '#ffffff' : '#f9fafb' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.5rem' }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: 4, flexWrap: 'wrap' }}>
+                        <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.provincia_da}</span>
+                        <i className="bi bi-arrow-right" style={{ color: '#9ca3af', fontSize: '0.75rem' }} />
+                        <span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700 }}>{r.provincia_a}</span>
+                        <span style={{ fontWeight: 600, fontSize: '0.88rem', color: '#10b981' }}>€ {fmt(r.costo)}</span>
+                        {r.km_totali && <span style={{ fontSize: '0.78rem', color: '#9ca3af' }}>{parseFloat(r.km_totali).toFixed(0)} km</span>}
+                      </div>
+                      <div style={{ fontSize: '0.82rem', fontWeight: 500, marginBottom: 2 }}>{r.carrier?.denominazione || '—'}</div>
+                      {r.note && <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>{r.note}</div>}
+                      <div style={{ fontSize: '0.72rem', color: '#d1d5db', marginTop: 2 }}>
+                        Aggiorn. {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
+                      </div>
+                    </div>
+                    {isAdmin && editing !== r.id && (
+                      <div style={{ display: 'flex', gap: '0.2rem', flexShrink: 0 }}>
+                        <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem' }} onClick={() => startEdit(r)}>
+                          <i className="bi bi-pencil" style={{ fontSize: '0.85rem' }} />
+                        </button>
+                        <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem', color: '#ef4444' }} onClick={() => handleDelete(r.id)}>
+                          <i className="bi bi-trash" style={{ fontSize: '0.85rem' }} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {editing === r.id && (
+                    <div style={{ marginTop: 8, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                      <input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 90 }}
+                        placeholder="km" value={editForm.km_totali} onChange={e => setEditForm(f => ({ ...f, km_totali: e.target.value }))} />
+                      <input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 110 }}
+                        placeholder="Costo €" value={editForm.costo} onChange={e => setEditForm(f => ({ ...f, costo: e.target.value }))} />
+                      <input className="mo-form-control" type="text" style={{ flex: '1 1 120px' }}
+                        placeholder="Note..." value={editForm.note} onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
+                      <button className="mo-btn mo-btn-primary" style={{ padding: '0.25rem 0.6rem' }} onClick={() => saveEdit(r.id)} disabled={saving}>
+                        <i className="bi bi-check-lg" />
+                      </button>
+                      <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.6rem' }} onClick={() => setEditing(null)}>
+                        <i className="bi bi-x-lg" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            {/* Desktop table */}
+            <div className="d-none d-md-block mo-table-wrap">
+              <table className="mo-table">
+                <thead>
+                  <tr>
+                    <th>Da</th>
+                    <th>A</th>
+                    <th>Trasportatore</th>
+                    <th>Km</th>
+                    <th>Costo (€)</th>
+                    <th>Ultimo aggiorn.</th>
+                    <th>Note</th>
+                    {isAdmin && <th></th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {routes.map(r => (
+                    <tr key={r.id}>
+                      <td><span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>{r.provincia_da}</span></td>
+                      <td><span className="mo-badge mo-badge-in_transito" style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.85rem' }}>{r.provincia_a}</span></td>
+                      <td style={{ fontWeight: 500 }}>{r.carrier?.denominazione || '—'}</td>
+                      {editing === r.id ? (
+                        <>
+                          <td><input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 90 }} value={editForm.km_totali} placeholder="km" onChange={e => setEditForm(f => ({ ...f, km_totali: e.target.value }))} /></td>
+                          <td><input className="mo-form-control" type="number" step="0.01" min="0" style={{ width: 110 }} value={editForm.costo} onChange={e => setEditForm(f => ({ ...f, costo: e.target.value }))} /></td>
+                          <td>—</td>
+                          <td><input className="mo-form-control" type="text" style={{ width: 140 }} value={editForm.note} placeholder="Note..." onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} /></td>
                           <td>
-                            <div className="d-flex gap-1 justify-content-end">
-                              <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem' }}
-                                onClick={() => startEdit(r)} title="Modifica costo">
-                                <i className="bi bi-pencil" />
-                              </button>
-                              <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem', color: '#ef4444' }}
-                                onClick={() => handleDelete(r.id)} title="Elimina tratta">
-                                <i className="bi bi-trash" />
-                              </button>
+                            <div className="d-flex gap-1">
+                              <button className="mo-btn mo-btn-primary" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }} onClick={() => saveEdit(r.id)} disabled={saving}><i className="bi bi-check-lg" /></button>
+                              <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem' }} onClick={() => setEditing(null)}><i className="bi bi-x-lg" /></button>
                             </div>
                           </td>
-                        )}
-                      </>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                        </>
+                      ) : (
+                        <>
+                          <td className="mo-text-muted" style={{ fontSize: '0.85rem' }}>{r.km_totali ? `${parseFloat(r.km_totali).toFixed(0)} km` : '—'}</td>
+                          <td style={{ fontWeight: 600 }}>€ {fmt(r.costo)}</td>
+                          <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>
+                            {r.updated_at ? new Date(r.updated_at).toLocaleDateString('it-IT') : '—'}
+                            {r.last_work_order_id && <button className="mo-btn mo-btn-ghost ms-1" style={{ padding: '0 0.3rem', fontSize: '0.75rem' }} onClick={() => navigate(`/work-orders/${r.last_work_order_id}`)}><i className="bi bi-box-arrow-up-right" /></button>}
+                          </td>
+                          <td className="mo-text-muted" style={{ fontSize: '0.8rem' }}>{r.note || <span style={{ opacity: 0.4 }}>—</span>}</td>
+                          {isAdmin && (
+                            <td>
+                              <div className="d-flex gap-1 justify-content-end">
+                                <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem' }} onClick={() => startEdit(r)}><i className="bi bi-pencil" /></button>
+                                <button className="mo-btn mo-btn-ghost" style={{ padding: '0.25rem 0.5rem', color: '#ef4444' }} onClick={() => handleDelete(r.id)}><i className="bi bi-trash" /></button>
+                              </div>
+                            </td>
+                          )}
+                        </>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {meta && meta.last_page > 1 && (
