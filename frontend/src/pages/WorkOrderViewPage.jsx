@@ -95,6 +95,12 @@ export default function WorkOrderViewPage() {
         alert('Seleziona almeno un referente del trasportatore modificando l\'ordine.');
         return;
       }
+      const nCarichi  = (order.stops || []).filter(s => s.tipo === 'carico').length;
+      const nScarichi = (order.stops || []).filter(s => s.tipo === 'scarico').length;
+      if (nCarichi === 0 || nScarichi === 0) {
+        alert('L\'ordine deve avere almeno un carico e almeno uno scarico prima di poter essere confermato.\nModifica l\'ordine e aggiungi le tappe mancanti.');
+        return;
+      }
       if (!order.data_carico || !order.data_scarico) {
         alert('Inserisci la data di carico e la data di scarico prima di confermare l\'ordine.\nModifica l\'ordine per aggiungere le date.');
         return;

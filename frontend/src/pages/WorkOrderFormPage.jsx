@@ -255,20 +255,24 @@ export default function WorkOrderFormPage() {
         document.getElementById('carrier-contacts-section')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
+      const nCarichi  = stops.filter(s => s.tipo === 'carico').length;
+      const nScarichi = stops.filter(s => s.tipo === 'scarico').length;
+      if (nCarichi === 0 || nScarichi === 0) {
+        alert('L\'ordine deve avere almeno un carico e almeno uno scarico prima di poter essere confermato.\nAggiungi le tappe mancanti.');
+        return;
+      }
       if (!form.data_carico || !form.data_scarico) {
         alert('Inserisci la data di carico e la data di scarico prima di confermare l\'ordine.');
         return;
       }
-    }
-    if (!validateStops()) return;
-    if (newStatus === 'confermato') {
       const prezzoCliente = parseFloat(form.prezzo_cliente || 0);
       const costoTrasportatore = parseFloat(form.costo_trasportatore || 0);
-      if (prezzoCliente === 0 && costoTrasportatore === 0) {
-        alert('Prezzo cliente e costo trasportatore sono entrambi a zero.\nInserisci i valori prima di confermare l\'ordine.');
+      if (prezzoCliente === 0 || costoTrasportatore === 0) {
+        alert('Prezzo cliente e costo trasportatore devono essere entrambi maggiori di zero.\nInserisci i valori prima di confermare l\'ordine.');
         return;
       }
     }
+    if (!validateStops()) return;
     setSaving(true);
     try {
       await api.put(`/work-orders/${id}`, { ...form, stops, status: newStatus });
