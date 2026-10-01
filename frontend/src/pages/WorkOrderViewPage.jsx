@@ -103,8 +103,8 @@ export default function WorkOrderViewPage() {
     if (newStatus === 'confermato') {
       const prezzoCliente = parseFloat(order.prezzo_cliente || 0);
       const costoTrasportatore = parseFloat(order.costo_trasportatore || 0);
-      if (prezzoCliente === 0 && costoTrasportatore === 0) {
-        alert('Prezzo cliente e costo trasportatore sono entrambi a zero.\nModifica l\'ordine e inserisci i valori prima di confermare.');
+      if (prezzoCliente === 0 || costoTrasportatore === 0) {
+        alert('Prezzo cliente e costo trasportatore devono essere entrambi maggiori di zero.\nModifica l\'ordine e inserisci i valori prima di confermare.');
         return;
       }
     }
