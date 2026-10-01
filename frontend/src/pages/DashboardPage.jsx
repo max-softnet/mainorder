@@ -19,8 +19,9 @@ function fmt(n) {
 }
 
 function fmtDate(d) {
-  return d ? new Date(d).toLocaleDateString('it-IT') : 'â€”';
+  return d ? new Date(d).toLocaleDateString('it-IT') : '—';
 }
+
 function luogoCarico(o) {
   const s = o.stops?.find(s => s.tipo === 'carico');
   return [s?.citta, s?.provincia].filter(Boolean).join(' (') + (s?.citta && s?.provincia ? ')' : '');
@@ -54,10 +55,10 @@ function OrderCard({ o, navigate, isAdminOp }) {
           </span>
         </div>
         <div style={{ fontSize: '0.82rem', fontWeight: 600, color: '#374151', marginBottom: 2 }}>
-          {o.cliente?.ragione_sociale || 'â€”'}
+          {o.cliente?.ragione_sociale || '—'}
         </div>
         <div style={{ fontSize: '0.75rem', color: '#9ca3af', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {o.data_carico && <span><i className="bi bi-arrow-up-circle me-1" />{fmtDate(o.data_carico)}{o.ora_carico ? ` Â· ${o.ora_carico}` : ''}</span>}
+          {o.data_carico && <span><i className="bi bi-arrow-up-circle me-1" />{fmtDate(o.data_carico)}{o.ora_carico ? ` · ${o.ora_carico}` : ''}</span>}
           {o.carrier?.denominazione && <span><i className="bi bi-truck me-1" />{o.carrier.denominazione}</span>}
         </div>
       </div>
@@ -74,7 +75,7 @@ function OrderTable({ rows, navigate, isAdminOp, cols }) {
       <table className="mo-table" style={{ fontSize: '0.85rem' }}>
         <thead>
           <tr>
-            {has('numero')        && <th>NÂ° Ordine</th>}
+            {has('numero')        && <th>N° Ordine</th>}
             {has('cliente')       && <th>Cliente</th>}
             {has('trasportatore') && <th>Trasportatore</th>}
             {has('carico')        && <th>Data carico</th>}
@@ -91,13 +92,13 @@ function OrderTable({ rows, navigate, isAdminOp, cols }) {
               {has('numero') && (
                 <td><span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: '0.88rem', color: 'var(--mo-purple)' }}>{o.numero_ordine || o.numero_tmp}</span></td>
               )}
-              {has('cliente')       && <td style={{ fontWeight: 500 }}>{o.cliente?.ragione_sociale || 'â€”'}</td>}
-              {has('trasportatore') && <td>{o.carrier?.denominazione || 'â€”'}</td>}
+              {has('cliente')       && <td style={{ fontWeight: 500 }}>{o.cliente?.ragione_sociale || '—'}</td>}
+              {has('trasportatore') && <td>{o.carrier?.denominazione || '—'}</td>}
               {has('carico')        && <td>{fmtDate(o.data_carico)}</td>}
               {has('scarico')       && <td>{fmtDate(o.data_scarico)}</td>}
-              {has('carico_luogo')  && <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoCarico(o) || <span className="mo-text-muted">—</span>}</td>}
-              {has('scarico_luogo') && <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoScarico(o) || <span className="mo-text-muted">—</span>}</td>}
-              {has('ora_carico')    && <td>{o.ora_carico ? <span style={{ fontFamily: 'monospace' }}>{o.ora_carico}</span> : <span className="mo-text-muted">â€”</span>}</td>}
+              {has('carico_luogo')  && <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoCarico(o) || '—'}</td>}
+              {has('scarico_luogo') && <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoScarico(o) || '—'}</td>}
+              {has('ora_carico')    && <td>{o.ora_carico ? <span style={{ fontFamily: 'monospace' }}>{o.ora_carico}</span> : <span className="mo-text-muted">—</span>}</td>}
               {has('azioni') && (
                 <td onClick={e => e.stopPropagation()}>
                   <div className="d-flex gap-1 justify-content-end">
@@ -159,9 +160,9 @@ function KpiBox({ label, value, icon, accent, euro = false, onClick }) {
       </div>
       <div style={{ fontSize: euro ? '1.1rem' : '1.5rem', fontWeight: 800, lineHeight: 1.15, whiteSpace: 'nowrap' }}>
         {value === null || value === undefined
-          ? <span style={{ color: '#d1d5db' }}>â€”</span>
+          ? <span style={{ color: '#d1d5db' }}>—</span>
           : euro
-            ? <span style={{ color: accent }}>â‚¬ {fmt(value)}</span>
+            ? <span style={{ color: accent }}>€ {fmt(value)}</span>
             : <span style={{ color: '#1e1e2e' }}>{value}</span>
         }
       </div>
@@ -208,7 +209,7 @@ export default function DashboardPage() {
             {new Date().toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </span>
         </div>
-        {/* Bottone nuovo ordine â€” visibile solo su desktop */}
+        {/* Bottone nuovo ordine — visibile solo su desktop */}
         {isAdminOp && (
           <button className="mo-btn mo-btn-primary d-none d-md-flex" onClick={() => navigate('/work-orders/new')}>
             <i className="bi bi-plus-lg me-1" />Nuovo ordine
@@ -216,7 +217,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* KPI â€” griglia 2 colonne mobile, 4+ desktop */}
+      {/* KPI — griglia 2 colonne mobile, 4+ desktop */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.5rem', marginBottom: '0.5rem' }}
         className="kpi-grid">
         <KpiBox label="Totale ordini" value={kpi?.totale_ordini ?? null} icon="bi-list-ol"      accent="#2E3192" onClick={() => navigate('/work-orders')} />
@@ -234,10 +235,10 @@ export default function DashboardPage() {
           </div>
           <div className="d-flex align-items-baseline gap-2 flex-wrap">
             <span style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e1e2e', lineHeight: 1.15 }}>
-              {kpi?.in_attesa ?? <span style={{ color: '#d1d5db' }}>â€”</span>}
+              {kpi?.in_attesa ?? <span style={{ color: '#d1d5db' }}>—</span>}
             </span>
             <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#f59e0b', whiteSpace: 'nowrap' }}>
-              â‚¬ {fmt(kpi?.in_attesa_venduto)}
+              € {fmt(kpi?.in_attesa_venduto)}
             </span>
           </div>
         </div>
@@ -286,11 +287,11 @@ export default function DashboardPage() {
         <OrderList
           rows={ordiniInAttesa} navigate={navigate} isAdminOp={isAdminOp} loading={loadingAttesa}
           cols={['numero', 'cliente', 'trasportatore', 'carico', 'scarico', 'ora_carico', 'azioni']}
-          emptyIcon="bi-check2-circle" emptyText="Nessun ordine in attesa â€” tutto in ordine!"
+          emptyIcon="bi-check2-circle" emptyText="Nessun ordine in attesa — tutto in ordine!"
         />
       </div>
 
-      {/* FAB Nuovo ordine â€” solo mobile */}
+      {/* FAB Nuovo ordine — solo mobile */}
       {isAdminOp && (
         <button
           className="d-md-none"
@@ -317,5 +318,3 @@ export default function DashboardPage() {
     </Layout>
   );
 }
-
-
