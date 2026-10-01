@@ -175,19 +175,17 @@ class WorkOrderController extends Controller
                         $mailer->send(new WorkOrderCancelled($workOrder));
                         MailLog::create([
                             'work_order_id' => $workOrder->id,
-                            'user_id'       => $user->id,
+                            'inviata_da'    => $user->id,
                             'tipo'          => 'annullamento',
                             'destinatari'   => $contacts->implode(', '),
-                            'mittente'      => $user->email,
                             'stato'         => 'inviata',
                         ]);
                     } catch (\Exception $e) {
                         MailLog::create([
                             'work_order_id' => $workOrder->id,
-                            'user_id'       => $user->id,
+                            'inviata_da'    => $user->id,
                             'tipo'          => 'annullamento',
                             'destinatari'   => $contacts->implode(', '),
-                            'mittente'      => $user->email,
                             'stato'         => 'errore',
                             'errore'        => $e->getMessage(),
                         ]);
