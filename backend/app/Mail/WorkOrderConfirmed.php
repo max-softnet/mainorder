@@ -7,6 +7,7 @@ use App\Models\WorkOrder;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
 use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -21,8 +22,13 @@ class WorkOrderConfirmed extends Mailable
 
     public function envelope(): Envelope
     {
-        $numero = $this->order->numero_ordine ?? $this->order->numero_tmp;
-        return new Envelope(subject: "Conferma ordine {$numero} — MainOrder");
+        $numero    = $this->order->numero_ordine ?? $this->order->numero_tmp;
+        $fromEmail = Setting::get('mail_from_address') ?: config('mail.from.address');
+        $fromName  = Setting::get('mail_from_name')    ?: config('mail.from.name');
+        return new Envelope(
+            from: new Address($fromEmail, $fromName),
+            subject: "Conferma ordine {$numero} — MainOrder",
+        );
     }
 
     public function content(): Content
