@@ -245,6 +245,9 @@ export default function WorkOrderFormPage() {
   };
 
   const handleStatusChange = async (newStatus) => {
+    if (newStatus === 'annullato') {
+      if (!confirm(`Annullare l'ordine? L'operazione non può essere annullata.`)) return;
+    }
     if (newStatus === 'confermato') {
       if (form.carrier_contact_ids.length === 0) {
         if (carrierContacts.length === 0) {

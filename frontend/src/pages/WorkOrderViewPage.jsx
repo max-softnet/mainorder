@@ -90,6 +90,9 @@ export default function WorkOrderViewPage() {
   }, [id]);
 
   const handleStatusChange = async (newStatus) => {
+    if (newStatus === 'annullato') {
+      if (!confirm(`Annullare l'ordine ${order.numero_ordine || order.numero_tmp}? L'operazione non può essere annullata.`)) return;
+    }
     if (newStatus === 'confermato') {
       if (!order.carrier_contacts?.length) {
         alert('Seleziona almeno un referente del trasportatore modificando l\'ordine.');
