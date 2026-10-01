@@ -231,10 +231,11 @@ export default function WorkOrderFormPage() {
       const payload = { ...form, stops };
       if (isEdit) {
         await api.put(`/work-orders/${id}`, payload);
+        navigate(`/work-orders/${id}`);
       } else {
-        await api.post('/work-orders', payload);
+        const { data } = await api.post('/work-orders', payload);
+        navigate(`/work-orders/${data.id}`);
       }
-      navigate('/work-orders');
     } catch (err) {
       if (err.response?.status === 422) setErrors(err.response.data.errors || {});
       window.scrollTo(0, 0);
