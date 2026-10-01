@@ -276,7 +276,11 @@ export default function WorkOrderFormPage() {
     setSaving(true);
     try {
       await api.put(`/work-orders/${id}`, { ...form, stops, status: newStatus });
-      navigate('/work-orders');
+      if (newStatus === 'confermato') {
+        navigate('/work-orders');
+      } else {
+        navigate(`/work-orders/${id}`);
+      }
     } catch (err) {
       if (err.response?.status === 422) setErrors(err.response.data.errors || {});
     } finally {

@@ -145,7 +145,11 @@ export default function WorkOrderViewPage() {
         numero_documento:         order.numero_documento,
       };
       const { data } = await api.put(`/work-orders/${id}`, payload);
-      setOrder(data);
+      if (newStatus === 'confermato') {
+        navigate('/work-orders');
+      } else {
+        setOrder(data);
+      }
     } catch (err) {
       alert('Errore nel cambio stato: ' + (err.response?.data?.message || err.message));
     } finally {
