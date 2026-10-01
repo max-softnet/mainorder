@@ -167,6 +167,7 @@ class WorkOrderController extends Controller
                 $contacts = $workOrder->carrierContacts()->get()->pluck('email')->filter()->values();
                 if ($contacts->isNotEmpty()) {
                     $workOrder->load(['cliente', 'carrier', 'stops']);
+                    Setting::applySmtp();
                     $bcc    = Setting::get('mail_bcc');
                     $mailer = Mail::to($contacts->toArray());
                     if (filled($bcc)) $mailer = $mailer->bcc($bcc);
