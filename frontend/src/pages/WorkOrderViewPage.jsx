@@ -12,8 +12,8 @@ const STATUS_LABELS = {
 
 const STATUS_TRANSITIONS = {
   in_attesa:  ['confermato', 'annullato'],
-  confermato: ['annullato', 'chiuso'],
-  chiuso:     ['fatturato'],
+  confermato: ['annullato'],
+  chiuso:     [],
   fatturato:  [],
   annullato:  [],
 };
