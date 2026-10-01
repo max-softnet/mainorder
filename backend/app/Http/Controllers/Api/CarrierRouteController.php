@@ -15,6 +15,7 @@ class CarrierRouteController extends Controller
             ->when($request->search, fn($q) => $q->where(fn($q2) => $q2
                 ->where('provincia_da', 'like', "%{$request->search}%")
                 ->orWhere('provincia_a', 'like', "%{$request->search}%")
+                ->orWhereHas('carrier', fn($q3) => $q3->where('denominazione', 'like', "%{$request->search}%"))
             ))
             ->when($request->provincia_da, fn($q) => $q->where('provincia_da', 'like', "%{$request->provincia_da}%"))
             ->when($request->provincia_a,  fn($q) => $q->where('provincia_a',  'like', "%{$request->provincia_a}%"))
