@@ -9,6 +9,16 @@ function fmt(n) {
   return n != null ? new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2 }).format(n) : '—';
 }
 
+function luogoCarico(o) {
+  const s = o.stops?.find(s => s.tipo === 'carico');
+  return [s?.citta, s?.provincia].filter(Boolean).join(' (') + (s?.citta && s?.provincia ? ')' : '');
+}
+
+function luogoScarico(o) {
+  const s = [...(o.stops || [])].reverse().find(s => s.tipo === 'scarico');
+  return [s?.citta, s?.provincia].filter(Boolean).join(' (') + (s?.citta && s?.provincia ? ')' : '');
+}
+
 function Row({ label, value }) {
   if (!value) return null;
   return (
@@ -36,7 +46,7 @@ export default function ClientViewPage() {
   useEffect(() => {
     Promise.all([
       api.get(`/clients/${id}`),
-      api.get('/work-orders', { params: { cliente_id: id, per_page: 10 } }),
+      api.get('/work-orders', { params: { cliente_id: id, per_page: 10, with_stops: 1 } }),
       api.get('/client-routes', { params: { cliente_id: id, per_page: 50 } }),
     ]).then(([{ data: c }, { data: o }, { data: r }]) => {
       setClient(c);
@@ -193,7 +203,7 @@ export default function ClientViewPage() {
               <div className="mo-table-wrap">
                 <table className="mo-table" style={{ fontSize: '0.85rem' }}>
                   <thead>
-                    <tr><th>N° Ordine</th><th>Stato</th><th>Data carico</th><th>Prezzo</th><th></th></tr>
+                    <tr><th>N° Ordine</th><th>Stato</th><th>Carico</th><th>Scarico</th><th>Data carico</th><th>Prezzo</th><th></th></tr>
                   </thead>
                   <tbody>
                     {orders.map(o => (
@@ -208,6 +218,8 @@ export default function ClientViewPage() {
                             {o.status}
                           </span>
                         </td>
+                        <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoCarico(o) || '—'}</td>
+                        <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoScarico(o) || '—'}</td>
                         <td className="mo-text-muted">
                           {o.data_carico ? new Date(o.data_carico).toLocaleDateString('it-IT') : '—'}
                         </td>
