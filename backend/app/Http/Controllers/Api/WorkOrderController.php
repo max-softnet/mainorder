@@ -214,8 +214,8 @@ class WorkOrderController extends Controller
         $request->validate([
             'cliente_id'   => 'required|exists:clients,id',
             'carrier_id'   => 'required|exists:carriers,id',
-            'provincia_da' => 'nullable|string|max:5',
-            'provincia_a'  => 'nullable|string|max:5',
+            'provincia_da' => 'nullable|string|max:100',
+            'provincia_a'  => 'nullable|string|max:100',
         ]);
 
         $cliente = Client::find($request->cliente_id);
