@@ -122,7 +122,17 @@ export default function Layout({ children }) {
 
           <div className="mo-search-wrap">
             <i className="bi bi-search" />
-            <input className="mo-search" type="text" placeholder="Cerca ordine..." />
+            <input
+              className="mo-search"
+              type="text"
+              placeholder="Cerca ordine..."
+              onKeyDown={e => {
+                if (e.key === 'Enter' && e.target.value.trim()) {
+                  navigate(`/work-orders?search=${encodeURIComponent(e.target.value.trim())}`);
+                  e.target.value = '';
+                }
+              }}
+            />
           </div>
 
           <div className="mo-header-right">
