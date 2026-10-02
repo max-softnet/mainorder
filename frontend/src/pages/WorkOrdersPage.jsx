@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import usePageTitle from '../hooks/usePageTitle';
 import { useAuth } from '../context/AuthContext';
@@ -24,9 +24,10 @@ export default function WorkOrdersPage() {
   usePageTitle('Ordini di lavoro');
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState('');
   const [cittaCarico, setCittaCarico] = useState('');
   const [dataCarico, setDataCarico] = useState('');
@@ -53,7 +54,7 @@ export default function WorkOrdersPage() {
     }
   };
 
-  useEffect(() => { fetchOrders(); }, []);
+  useEffect(() => { fetchOrders(search); }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
