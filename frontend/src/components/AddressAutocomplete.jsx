@@ -10,7 +10,7 @@ async function resolveConfig() {
   if (resolvedApiKey !== null) return;
   try {
     const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
-    const res = await fetch(`${baseUrl}/config`);
+    const res = await fetch(`${baseUrl}/app-init`);
     if (res.ok) {
       const data = await res.json();
       if (data.google_maps_key) resolvedApiKey = data.google_maps_key;

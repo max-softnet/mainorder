@@ -29,8 +29,8 @@ Route::get('carrier-update/logo', [CarrierUpdateController::class, 'logo']);
 Route::get('carrier-update/{token}', [CarrierUpdateController::class, 'show']);
 Route::post('carrier-update/{token}', [CarrierUpdateController::class, 'update']);
 
-// Config pubblica (senza auth)
-Route::get('/config', function () {
+// Config pubblica (senza auth) — nota: /config era bloccato da mod_security SiteGround
+Route::get('/app-init', function () {
     return response()->json([
         'google_maps_key'  => \App\Models\Setting::get('google_maps_key', ''),
         'maps_countries'   => \App\Models\Setting::get('maps_countries', 'it,fr,ch,at,si,sm,va,es'),
