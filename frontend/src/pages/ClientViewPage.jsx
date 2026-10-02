@@ -200,40 +200,49 @@ export default function ClientViewPage() {
             {orders.length === 0 ? (
               <div className="text-center py-4 mo-text-muted">Nessun ordine per questo cliente.</div>
             ) : (
-              <div className="mo-table-wrap">
-                <table className="mo-table" style={{ fontSize: '0.85rem' }}>
-                  <thead>
-                    <tr><th>N° Ordine</th><th>Stato</th><th>Carico</th><th>Scarico</th><th>Data carico</th><th>Prezzo</th><th></th></tr>
-                  </thead>
-                  <tbody>
-                    {orders.map(o => (
-                      <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/work-orders/${o.id}`)}>
-                        <td>
-                          <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--mo-purple)' }}>
-                            {o.numero_ordine || o.numero_tmp}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`mo-badge mo-badge-${o.status}`} style={{ fontSize: '0.72rem' }}>
-                            {o.status}
-                          </span>
-                        </td>
-                        <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoCarico(o) || '—'}</td>
-                        <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoScarico(o) || '—'}</td>
-                        <td className="mo-text-muted">
-                          {o.data_carico ? new Date(o.data_carico).toLocaleDateString('it-IT') : '—'}
-                        </td>
-                        <td style={{ fontWeight: 600 }}>
-                          {o.prezzo_cliente ? `€ ${fmt(o.prezzo_cliente)}` : '—'}
-                        </td>
-                        <td>
-                          <i className="bi bi-chevron-right mo-text-muted" />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {/* Desktop */}
+                <div className="mo-table-wrap d-none d-md-block">
+                  <table className="mo-table" style={{ fontSize: '0.85rem' }}>
+                    <thead>
+                      <tr><th>N° Ordine</th><th>Stato</th><th>Carico</th><th>Scarico</th><th>Data carico</th><th>Prezzo</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      {orders.map(o => (
+                        <tr key={o.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/work-orders/${o.id}`)}>
+                          <td><span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--mo-purple)' }}>{o.numero_ordine || o.numero_tmp}</span></td>
+                          <td><span className={`mo-badge mo-badge-${o.status}`} style={{ fontSize: '0.72rem' }}>{o.status}</span></td>
+                          <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoCarico(o) || '—'}</td>
+                          <td style={{ fontSize: '0.8rem', color: '#6b7280' }}>{luogoScarico(o) || '—'}</td>
+                          <td className="mo-text-muted">{o.data_carico ? new Date(o.data_carico).toLocaleDateString('it-IT') : '—'}</td>
+                          <td style={{ fontWeight: 600 }}>{o.prezzo_cliente ? `€ ${fmt(o.prezzo_cliente)}` : '—'}</td>
+                          <td><i className="bi bi-chevron-right mo-text-muted" /></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Mobile cards */}
+                <div className="d-md-none d-flex flex-column gap-2">
+                  {orders.map(o => (
+                    <div key={o.id} onClick={() => navigate(`/work-orders/${o.id}`)}
+                      style={{ border: '1px solid #e5e7eb', borderRadius: 10, padding: '0.75rem 1rem', cursor: 'pointer', background: '#fafafa' }}>
+                      <div className="d-flex align-items-center justify-content-between mb-1">
+                        <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--mo-purple)', fontSize: '0.9rem' }}>{o.numero_ordine || o.numero_tmp}</span>
+                        <span className={`mo-badge mo-badge-${o.status}`} style={{ fontSize: '0.7rem' }}>{o.status}</span>
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#6b7280', display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                        {luogoCarico(o) && <span><i className="bi bi-arrow-up-circle text-success me-1" />{luogoCarico(o)}</span>}
+                        {luogoScarico(o) && <span><i className="bi bi-arrow-down-circle text-danger me-1" />{luogoScarico(o)}</span>}
+                      </div>
+                      <div style={{ fontSize: '0.78rem', color: '#9ca3af', marginTop: '0.25rem', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{o.data_carico ? new Date(o.data_carico).toLocaleDateString('it-IT') : '—'}</span>
+                        <span style={{ fontWeight: 600, color: '#374151' }}>{o.prezzo_cliente ? `€ ${fmt(o.prezzo_cliente)}` : ''}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </div>
