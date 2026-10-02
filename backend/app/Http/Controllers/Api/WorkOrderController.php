@@ -303,6 +303,9 @@ class WorkOrderController extends Controller
         $da = strtoupper($firstCarico->provincia);
         $a  = strtoupper($lastScarico->provincia);
 
+        // Salta province straniere (nomi lunghi, non codici sigla italiani)
+        if (strlen($da) > 5 || strlen($a) > 5) return;
+
         // Listino cliente
         ClientRoute::updateOrCreate(
             ['cliente_id' => $order->cliente_id, 'provincia_da' => $da, 'provincia_a' => $a],
