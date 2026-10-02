@@ -353,7 +353,7 @@ class WorkOrderController extends Controller
             'stops.*.indirizzo'        => 'nullable|string',
             'stops.*.citta'            => 'nullable|string',
             'stops.*.cap'              => 'nullable|string',
-            'stops.*.provincia'        => 'nullable|string|max:5',
+            'stops.*.provincia'        => 'nullable|string|max:100',
             'stops.*.provincia_nome'   => 'nullable|string',
             'stops.*.lat'              => 'nullable|numeric',
             'stops.*.lng'              => 'nullable|numeric',
