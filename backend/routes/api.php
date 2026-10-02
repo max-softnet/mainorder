@@ -37,6 +37,36 @@ Route::get('/config', function () {
     ]);
 });
 
+// Proxy OSRM e Nominatim — evita CORS browser (specialmente Safari)
+Route::get('/proxy/osrm', function (\Illuminate\Http\Request $request) {
+    $coords = $request->query('coords');
+    if (!$coords || !preg_match('/^[\d.,;+-]+$/', $coords)) {
+        return response()->json(['error' => 'invalid coords'], 400);
+    }
+    $url = "https://router.project-osrm.org/route/v1/driving/{$coords}?overview=false&steps=false";
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10,
+        CURLOPT_USERAGENT => 'MainOrder/1.0', CURLOPT_SSL_VERIFYPEER => true]);
+    $body = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return response($body ?: '{}', $status)->header('Content-Type', 'application/json');
+});
+
+Route::get('/proxy/nominatim', function (\Illuminate\Http\Request $request) {
+    $q = $request->query('q');
+    if (!$q) return response()->json([], 200);
+    $params = http_build_query(['q' => $q, 'format' => 'json', 'addressdetails' => '1', 'countrycodes' => 'it', 'limit' => '1']);
+    $url = "https://nominatim.openstreetmap.org/search?{$params}";
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10,
+        CURLOPT_USERAGENT => 'MainOrder/1.0', CURLOPT_SSL_VERIFYPEER => true]);
+    $body = curl_exec($ch);
+    $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return response($body ?: '[]', $status)->header('Content-Type', 'application/json');
+});
+
 // Rotte protette
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

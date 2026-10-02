@@ -11,17 +11,15 @@ const EMPTY_STOP = {
   km_da_precedente: null,
 };
 
-// Geocodifica un indirizzo via Nominatim — arricchisce lat/lng e provincia
+// Geocodifica un indirizzo via proxy backend (evita CORS su Safari)
 async function geocodificaTappa(stop) {
   // Salta solo se ha già sia coordinate che provincia
   if (stop.lat && stop.lng && stop.provincia) return stop;
   const q = [stop.indirizzo, stop.citta, stop.provincia].filter(Boolean).join(', ');
   if (!q) return stop;
   try {
-    const params = new URLSearchParams({ q, format: 'json', addressdetails: '1', countrycodes: 'it', limit: '1' });
-    const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
-      headers: { 'User-Agent': 'MainOrder/1.0' },
-    });
+    const params = new URLSearchParams({ q });
+    const res = await fetch(`/api/proxy/nominatim?${params}`);
     if (!res.ok) return stop;
     const [item] = await res.json();
     if (!item) return stop;
@@ -36,19 +34,15 @@ async function geocodificaTappa(stop) {
   }
 }
 
-// Calcola i km tra tappe consecutive via OSRM (gratuito, nessuna API key)
+// Calcola i km tra tappe consecutive via proxy backend (OSRM)
 async function calcolaKmTappe(stops) {
   const withCoords = stops.filter(s => s.lat && s.lng);
   if (withCoords.length < 2) return stops;
 
-  // OSRM vuole le coordinate come "lon,lat;lon,lat;..."
   const coords = withCoords.map(s => `${parseFloat(s.lng).toFixed(6)},${parseFloat(s.lat).toFixed(6)}`).join(';');
 
   try {
-    const res = await fetch(
-      `https://router.project-osrm.org/route/v1/driving/${coords}?overview=false&steps=false`,
-      { headers: { 'User-Agent': 'MainOrder/1.0' } }
-    );
+    const res = await fetch(`/api/proxy/osrm?coords=${encodeURIComponent(coords)}`);
     if (!res.ok) return stops;
     const data = await res.json();
     const legs = data.routes?.[0]?.legs;
