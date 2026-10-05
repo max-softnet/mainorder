@@ -65,7 +65,10 @@ function TrendTooltipVenduto({ active, payload, label }) {
   );
 }
 
-function TopTable({ title, icon, rows, valueKey, valueLabel, color }) {
+// mode='euro': colonne #, Nome, Ordini(badge), Valore(€), [Media(€)]
+// mode='count': colonne #, Nome, Ordini(badge grande), [Media(€)]
+function TopTable({ title, icon, rows, color, mode = 'euro', valueKey, valueLabel, avgKey, avgLabel }) {
+  const cols = mode === 'euro' ? (avgKey ? 5 : 4) : (avgKey ? 4 : 3);
   return (
     <div className="mo-card h-100">
       <div className="mb-3 d-flex align-items-center gap-2" style={{ fontWeight: 700, fontSize: '1rem' }}>
@@ -77,8 +80,10 @@ function TopTable({ title, icon, rows, valueKey, valueLabel, color }) {
             <tr>
               <th style={{ width: 30 }}>#</th>
               <th>Nome</th>
-              <th style={{ textAlign: 'center' }}>Ordini</th>
-              <th style={{ textAlign: 'right' }}>{valueLabel}</th>
+              {mode === 'euro' && <th style={{ textAlign: 'center' }}>Ordini</th>}
+              {mode === 'euro' && <th style={{ textAlign: 'right' }}>{valueLabel}</th>}
+              {mode === 'count' && <th style={{ textAlign: 'center' }}>Ordini</th>}
+              {avgKey && <th style={{ textAlign: 'right' }}>{avgLabel}</th>}
             </tr>
           </thead>
           <tbody>
@@ -94,13 +99,14 @@ function TopTable({ title, icon, rows, valueKey, valueLabel, color }) {
                 </td>
                 <td style={{ fontWeight: i < 3 ? 600 : 400 }}>{r.nome}</td>
                 <td style={{ textAlign: 'center' }}>
-                  <span className="mo-badge mo-badge-in_transito" style={{ fontSize: '0.72rem' }}>{r.ordini}</span>
+                  <span className="mo-badge mo-badge-in_transito" style={{ fontSize: mode === 'count' ? '0.85rem' : '0.72rem', fontWeight: mode === 'count' ? 700 : 400 }}>{r.ordini}</span>
                 </td>
-                <td style={{ textAlign: 'right', fontWeight: 600 }}>€ {fmt(r[valueKey])}</td>
+                {mode === 'euro' && <td style={{ textAlign: 'right', fontWeight: 600 }}>€ {fmt(r[valueKey])}</td>}
+                {avgKey && <td style={{ textAlign: 'right', color: '#6b7280' }}>€ {fmt(r[avgKey])}</td>}
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={4} className="text-center mo-text-muted py-3">Nessun dato</td></tr>
+              <tr><td colSpan={cols} className="text-center mo-text-muted py-3">Nessun dato</td></tr>
             )}
           </tbody>
         </table>
@@ -305,14 +311,15 @@ export default function StatisticsPage() {
         </div>
       )}
 
-      {/* Top 10 */}
-      <div className="row g-4">
+      {/* Top 10 per fatturato/costo */}
+      <div className="row g-4 mb-4">
         <div className="col-md-6">
           <TopTable
             title="Top 10 Clienti per Fatturato"
             icon="bi-building" color="#10b981"
             rows={data?.top_clienti || []}
             valueKey="venduto" valueLabel="Venduto"
+            avgKey="media_prezzo" avgLabel="Media"
           />
         </div>
         <div className="col-md-6">
@@ -321,6 +328,29 @@ export default function StatisticsPage() {
             icon="bi-truck" color="#f59e0b"
             rows={data?.top_carrier || []}
             valueKey="costo" valueLabel="Costo"
+            avgKey="media_costo" avgLabel="Media"
+          />
+        </div>
+      </div>
+
+      {/* Top 10 per numero ordini */}
+      <div className="row g-4">
+        <div className="col-md-6">
+          <TopTable
+            title="Top 10 Clienti per N° Ordini"
+            icon="bi-building" color="#2E3192"
+            rows={data?.top_clienti_ordini || []}
+            mode="count"
+            avgKey="media_prezzo" avgLabel="Media prezzo"
+          />
+        </div>
+        <div className="col-md-6">
+          <TopTable
+            title="Top 10 Trasportatori per N° Ordini"
+            icon="bi-truck" color="#6366a0"
+            rows={data?.top_carrier_ordini || []}
+            mode="count"
+            avgKey="media_costo" avgLabel="Media costo"
           />
         </div>
       </div>
