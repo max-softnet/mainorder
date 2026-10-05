@@ -94,6 +94,14 @@ class WorkOrderController extends Controller
         return response()->json($this->loadFull($workOrder));
     }
 
+    public function updateRifDdt(Request $request, WorkOrder $workOrder)
+    {
+        $this->authorizeAdminOrOperatore($request);
+        $data = $request->validate(['rif_ddt' => 'nullable|string|max:100']);
+        $workOrder->update(['rif_ddt' => $data['rif_ddt'] ?? null]);
+        return response()->json(['rif_ddt' => $workOrder->rif_ddt]);
+    }
+
     public function update(Request $request, WorkOrder $workOrder)
     {
         $user = $request->user();

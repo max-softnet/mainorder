@@ -95,6 +95,27 @@ export default function WorkOrdersPage() {
 
   const canWrite = user?.role === 'admin' || user?.role === 'operatore';
 
+  const [dttModal, setDttModal] = useState(null); // { id, rif_ddt }
+  const [dttValue, setDttValue] = useState('');
+  const [dttSaving, setDttSaving] = useState(false);
+
+  const openDtt = (e, o) => {
+    e.stopPropagation();
+    setDttModal({ id: o.id, numero: o.numero_ordine || o.numero_tmp });
+    setDttValue(o.rif_ddt || '');
+  };
+
+  const saveDtt = async () => {
+    setDttSaving(true);
+    try {
+      await api.patch(`/work-orders/${dttModal.id}/rif-ddt`, { rif_ddt: dttValue });
+      setOrders(prev => prev.map(o => o.id === dttModal.id ? { ...o, rif_ddt: dttValue } : o));
+      setDttModal(null);
+    } finally {
+      setDttSaving(false);
+    }
+  };
+
   const luogoCatico = (o) => {
     const s = o.stops?.find(s => s.tipo === 'carico');
     return [s?.citta, s?.provincia].filter(Boolean).join(' (') + (s?.citta && s?.provincia ? ')' : '');
@@ -218,6 +239,15 @@ export default function WorkOrdersPage() {
                         {o.totale_trasportatore && <span>Costo TR: <strong style={{ color: '#374151' }}>€ {parseFloat(o.totale_trasportatore).toFixed(2)}</strong></span>}
                       </div>
                     )}
+                    {canWrite && (
+                      <div style={{ marginTop: 6 }} onClick={e => e.stopPropagation()}>
+                        <button className="mo-btn mo-btn-ghost" style={{ padding: '0.2rem 0.5rem', fontSize: '0.78rem' }}
+                          onClick={e => openDtt(e, o)}>
+                          <i className="bi bi-file-earmark-text me-1" />
+                          {o.rif_ddt ? <span style={{ fontFamily: 'monospace' }}>DDT: {o.rif_ddt}</span> : <span className="mo-text-muted">Rif. DDT —</span>}
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -234,6 +264,7 @@ export default function WorkOrdersPage() {
                     <th>Carico</th>
                     <th>Scarico</th>
                     <th>Stato</th>
+                    <th>Rif. DDT</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -299,6 +330,18 @@ export default function WorkOrdersPage() {
                         </span>
                       </td>
                       <td>
+                        {canWrite ? (
+                          <button className="mo-btn mo-btn-ghost" style={{ padding: '0.2rem 0.5rem', fontSize: '0.82rem', whiteSpace: 'nowrap' }}
+                            onClick={e => openDtt(e, o)}>
+                            {o.rif_ddt
+                              ? <span style={{ fontFamily: 'monospace', color: '#374151' }}>{o.rif_ddt}</span>
+                              : <span className="mo-text-muted"><i className="bi bi-pencil me-1" style={{ fontSize: '0.75rem' }} />—</span>}
+                          </button>
+                        ) : (
+                          <span style={{ fontFamily: 'monospace', fontSize: '0.82rem' }}>{o.rif_ddt || '—'}</span>
+                        )}
+                      </td>
+                      <td>
                         <div className="d-flex gap-1 justify-content-end">
                           <button className="mo-btn mo-btn-ghost" style={{ padding: '0.3rem 0.6rem' }}
                             onClick={() => navigate(`/work-orders/${o.id}`)}>
@@ -349,6 +392,39 @@ export default function WorkOrdersPage() {
           </div>
         )}
       </div>
+
+      {/* Modale Rif. DDT */}
+      {dttModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setDttModal(null)}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+          <div style={{ position: 'relative', background: '#fff', borderRadius: 12, padding: '1.5rem', width: '100%', maxWidth: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 4 }}>
+              <i className="bi bi-file-earmark-text me-2" style={{ color: 'var(--mo-purple)' }} />
+              Riferimento DDT
+            </div>
+            <div style={{ fontSize: '0.82rem', color: '#6b7280', marginBottom: 16 }}>
+              Ordine {dttModal.numero}
+            </div>
+            <input
+              className="mo-form-control"
+              type="text"
+              placeholder="Es. DDT-2024-001"
+              value={dttValue}
+              onChange={e => setDttValue(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') saveDtt(); if (e.key === 'Escape') setDttModal(null); }}
+              autoFocus
+            />
+            <div className="d-flex gap-2 justify-content-end mt-3">
+              <button className="mo-btn mo-btn-ghost" onClick={() => setDttModal(null)}>Annulla</button>
+              <button className="mo-btn mo-btn-primary" onClick={saveDtt} disabled={dttSaving}>
+                {dttSaving ? 'Salvataggio...' : 'Salva'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* FAB Nuovo ordine — solo mobile */}
       {canWrite && (

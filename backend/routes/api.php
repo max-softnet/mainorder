@@ -81,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Ordini di lavoro
     Route::get('work-orders/prepare', [WorkOrderController::class, 'prepareData']);
+    Route::patch('work-orders/{workOrder}/rif-ddt', [WorkOrderController::class, 'updateRifDdt']);
     Route::apiResource('work-orders', WorkOrderController::class);
     Route::get('work-orders/{workOrder}/pdf', [WorkOrderPdfController::class, 'download']);
     Route::post('work-orders/{workOrder}/resend-email', [WorkOrderController::class, 'resendEmail']);
