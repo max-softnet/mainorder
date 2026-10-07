@@ -144,16 +144,25 @@
       @else
         <div class="logo-placeholder"></div>
       @endif
-    </td>
-    <td class="company-cell">
-      @if($company['company_name'])
-        <div class="company-name">{{ $company['company_name'] }}</div>
-      @endif
-      <div class="company-info">
+      <div class="company-info" style="margin-top:6px;">
+        @if($company['company_name'])<div class="company-name">{{ $company['company_name'] }}</div>@endif
         @if($company['company_address'])<div>{{ $company['company_address'] }}</div>@endif
         @if($company['company_city'])<div>{{ $company['company_city'] }}</div>@endif
         @if($company['company_piva'])<div>P.IVA : {{ $company['company_piva'] }}</div>@endif
       </div>
+    </td>
+    <td class="company-cell">
+      @if($order->carrier)
+        <div class="company-name">{{ $order->carrier->denominazione }}</div>
+        <div class="company-info">
+          @if($order->carrier->indirizzo)<div>{{ $order->carrier->indirizzo }}</div>@endif
+          @php
+            $cittaCarrier = trim(($order->carrier->cap ?? '') . ' ' . ($order->carrier->citta ?? '') . ' ' . ($order->carrier->provincia ?? ''));
+          @endphp
+          @if($cittaCarrier)<div>{{ $cittaCarrier }}</div>@endif
+          @if($order->carrier->partita_iva)<div>P.IVA : {{ $order->carrier->partita_iva }}</div>@endif
+        </div>
+      @endif
     </td>
   </tr>
 </table>
