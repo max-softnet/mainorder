@@ -59,7 +59,7 @@ function parseGoogleComponents(components) {
 async function nominatimSearch(text) {
   const params = new URLSearchParams({
     q: text, format: 'json', addressdetails: '1',
-    countrycodes: 'it', limit: '6', 'accept-language': 'it',
+    countrycodes: 'it,sm,va', limit: '6', 'accept-language': 'it',
   });
   const res = await fetch(`https://nominatim.openstreetmap.org/search?${params}`, {
     headers: { 'User-Agent': 'MainOrder/1.0' },

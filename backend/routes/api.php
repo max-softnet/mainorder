@@ -56,7 +56,7 @@ Route::get('/proxy/osrm', function (\Illuminate\Http\Request $request) {
 Route::get('/proxy/nominatim', function (\Illuminate\Http\Request $request) {
     $q = $request->query('q');
     if (!$q) return response()->json([], 200);
-    $params = http_build_query(['q' => $q, 'format' => 'json', 'addressdetails' => '1', 'countrycodes' => 'it', 'limit' => '1']);
+    $params = http_build_query(['q' => $q, 'format' => 'json', 'addressdetails' => '1', 'countrycodes' => 'it,sm,va', 'limit' => '1']);
     $url = "https://nominatim.openstreetmap.org/search?{$params}";
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 10,
