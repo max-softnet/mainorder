@@ -78,7 +78,13 @@ function parseNominatimResult(item) {
     : '';
   // Nominatim mette ISO3166-2-lvl6 a volte nel root, a volte dentro address
   const iso = item['ISO3166-2-lvl6'] || a['ISO3166-2-lvl6'] || '';
-  const provincia = iso.includes('-') ? iso.split('-').pop() : '';
+  let provincia = iso.includes('-') ? iso.split('-').pop() : '';
+  // Micro-stati senza province: assegna sigla convenzionale
+  const countryCode = (a.country_code || '').toUpperCase();
+  if (!provincia) {
+    if (countryCode === 'SM') provincia = 'SMR';
+    if (countryCode === 'VA') provincia = 'SCV';
+  }
   return {
     indirizzo: indirizzo || item.display_name?.split(',')[0] || '',
     citta, cap, provincia, provincia_nome,
