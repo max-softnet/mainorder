@@ -10,6 +10,11 @@ const STATUS_LABELS = {
   annullato: 'Annullato', chiuso: 'Chiuso', fatturato: 'Fatturato',
 };
 
+const STATUS_FILTER_LABELS = {
+  in_attesa: 'In Attesa', confermato: 'Confermato',
+  annullato: 'Annullato', fatturato: 'Fatturato',
+};
+
 const STATUS_BADGE = {
   in_attesa:      'mo-badge-in_lavorazione',
   confermato:     'mo-badge-consegnato',
@@ -30,11 +35,18 @@ export default function WorkOrdersPage() {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [statusFilter, setStatusFilter] = useState('');
   const [cittaCarico, setCittaCarico] = useState('');
+  const [cittaScarico, setCittaScarico] = useState('');
   const [dataCarico, setDataCarico] = useState('');
+  const [clienteFilter, setClienteFilter] = useState('');
+  const [carrierFilter, setCarrierFilter] = useState('');
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
 
-  const fetchOrders = async (s = search, st = statusFilter, p = page, cc = cittaCarico, dc = dataCarico) => {
+  const fetchOrders = async (
+    s = search, st = statusFilter, p = page,
+    cc = cittaCarico, dc = dataCarico,
+    cs = cittaScarico, cl = clienteFilter, ca = carrierFilter
+  ) => {
     setLoading(true);
     try {
       const { data } = await api.get('/work-orders', {
@@ -43,8 +55,11 @@ export default function WorkOrdersPage() {
           status: st || undefined,
           page: p,
           with_stops: 1,
-          citta_carico: cc || undefined,
-          data_carico: dc || undefined,
+          citta_carico:  cc || undefined,
+          data_carico:   dc || undefined,
+          citta_scarico: cs || undefined,
+          search_cliente:  cl || undefined,
+          search_carrier:  ca || undefined,
         },
       });
       setOrders(data.data);
@@ -59,15 +74,16 @@ export default function WorkOrdersPage() {
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);
-    fetchOrders(search, statusFilter, 1, cittaCarico, dataCarico);
+    fetchOrders(search, statusFilter, 1, cittaCarico, dataCarico, cittaScarico, clienteFilter, carrierFilter);
   };
 
   const handleReset = () => {
     setSearch(''); setStatusFilter(''); setCittaCarico(''); setDataCarico('');
-    fetchOrders('', '', 1, '', '');
+    setCittaScarico(''); setClienteFilter(''); setCarrierFilter('');
+    fetchOrders('', '', 1, '', '', '', '', '');
   };
 
-  const hasFilters = search || statusFilter || cittaCarico || dataCarico;
+  const hasFilters = search || statusFilter || cittaCarico || dataCarico || cittaScarico || clienteFilter || carrierFilter;
 
   const handleDelete = async (id) => {
     if (!confirm('Eliminare questo ordine?')) return;
@@ -140,26 +156,31 @@ export default function WorkOrdersPage() {
       <div className="mo-card mb-3">
         <form onSubmit={handleSearch}>
           <div className="d-flex gap-2 flex-wrap align-items-center">
-            {/* Numero ordine — larghezza fissa su desktop */}
-            <div className="mo-search-wrap" style={{ flex: '1 1 140px', maxWidth: '220px' }}>
+            <div className="mo-search-wrap" style={{ flex: '1 1 130px', maxWidth: '200px' }}>
               <i className="bi bi-search" />
               <input className="mo-search w-100" type="text"
                 placeholder="Nº ordine..."
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
-            {/* Sede carico — cresce ma non troppo */}
-            <input className="mo-form-control" style={{ flex: '1 1 140px', maxWidth: '260px' }}
-              type="text" placeholder="Sede di carico (città)..."
+            <input className="mo-form-control" style={{ flex: '1 1 130px', maxWidth: '200px' }}
+              type="text" placeholder="Cliente..."
+              value={clienteFilter} onChange={e => setClienteFilter(e.target.value)} />
+            <input className="mo-form-control" style={{ flex: '1 1 130px', maxWidth: '200px' }}
+              type="text" placeholder="Trasportatore..."
+              value={carrierFilter} onChange={e => setCarrierFilter(e.target.value)} />
+            <input className="mo-form-control" style={{ flex: '1 1 130px', maxWidth: '200px' }}
+              type="text" placeholder="Città carico..."
               value={cittaCarico} onChange={e => setCittaCarico(e.target.value)} />
-            {/* Data carico — larghezza naturale */}
+            <input className="mo-form-control" style={{ flex: '1 1 130px', maxWidth: '200px' }}
+              type="text" placeholder="Città scarico..."
+              value={cittaScarico} onChange={e => setCittaScarico(e.target.value)} />
             <input className="mo-form-control" style={{ flex: '0 0 auto', width: '150px' }}
               type="date" title="Data di carico"
               value={dataCarico} onChange={e => setDataCarico(e.target.value)} />
-            {/* Stato */}
             <select className="mo-form-control" style={{ flex: '0 0 auto', width: '145px' }}
-              value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); fetchOrders(search, e.target.value, 1, cittaCarico, dataCarico); }}>
+              value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); fetchOrders(search, e.target.value, 1, cittaCarico, dataCarico, cittaScarico, clienteFilter, carrierFilter); }}>
               <option value="">Tutti gli stati</option>
-              {Object.entries(STATUS_LABELS).map(([k, v]) => (
+              {Object.entries(STATUS_FILTER_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
               ))}
             </select>
