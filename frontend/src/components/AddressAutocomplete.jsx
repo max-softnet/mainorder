@@ -46,11 +46,18 @@ function parseGoogleComponents(components) {
     const c = components.find(c => c.types.includes(type));
     return c ? (short ? c.short_name : c.long_name) : '';
   };
+  let provincia = get('administrative_area_level_2', true);
+  // Micro-stati senza province: assegna sigla convenzionale
+  const country = get('country', true).toUpperCase();
+  if (!provincia) {
+    if (country === 'SM') provincia = 'SMR';
+    if (country === 'VA') provincia = 'SCV';
+  }
   return {
     indirizzo:      [get('route'), get('street_number')].filter(Boolean).join(', '),
     citta:          get('locality') || get('administrative_area_level_3'),
     cap:            get('postal_code'),
-    provincia:      get('administrative_area_level_2', true),
+    provincia,
     provincia_nome: get('administrative_area_level_2'),
   };
 }
