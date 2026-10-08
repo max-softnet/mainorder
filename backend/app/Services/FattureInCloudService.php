@@ -154,11 +154,9 @@ class FattureInCloudService
             ],
         ];
 
-        // Aggiungi metodo di pagamento se configurato
-        $pmId = $this->paymentMethodId();
-        if ($pmId) {
-            $body['data']['payment_method'] = ['id' => $pmId];
-        }
+        // Il metodo di pagamento non viene inviato: FiC richiede che payments_list
+        // abbia un amount esatto pari al totale lordo, che non è calcolabile qui
+        // senza conoscere l'aliquota IVA. L'utente imposta il pagamento in FiC.
 
         // Abilita e-invoice se il cliente ha SDI
         if (filled($client->sdi)) {
