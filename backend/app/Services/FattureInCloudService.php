@@ -220,7 +220,7 @@ class FattureInCloudService
                 'atteso'       => $atteso,
             ]);
 
-            throw new \RuntimeException("Errore creazione fattura FiC: {$msg} [lordo_calcolato={$totaleLordo}, netto={$totaleNetto}]");
+            throw new \RuntimeException("Errore creazione fattura FiC: {$msg} [lordo={$totaleLordo}, netto={$totaleNetto}, iva={$vatRate}%]");
         }
 
         return $response->json('data') ?? [];
