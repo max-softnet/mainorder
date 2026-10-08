@@ -12,6 +12,16 @@ class FicSyncController extends Controller
     public function __construct(private FattureInCloudService $fic) {}
 
     /**
+     * DEBUG: ritorna il raw JSON del primo cliente FiC (da rimuovere dopo).
+     */
+    public function debugRaw(Request $request)
+    {
+        if (!$request->user()->isAdmin()) abort(403);
+        $clients = $this->fic->listClients();
+        return response()->json($clients[0] ?? []);
+    }
+
+    /**
      * Restituisce la lista clienti da FiC con lo stato (nuovo / aggiornabile / uguale).
      */
     public function preview(Request $request)

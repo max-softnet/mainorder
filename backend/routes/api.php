@@ -125,6 +125,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('access-logs', [AccessLogController::class, 'index']);
 
     // Sync clienti Fatture in Cloud (solo admin)
+    Route::get('fic/clients/debug-raw', [FicSyncController::class, 'debugRaw']);
     Route::get('fic/clients/preview', [FicSyncController::class, 'preview']);
     Route::post('fic/clients/import', [FicSyncController::class, 'import']);
 
