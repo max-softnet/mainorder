@@ -91,6 +91,42 @@ class BillingController extends Controller
     }
 
     /**
+     * POST /billing/unbill
+     * Riporta ordini fatturati a confermato. Solo admin.
+     */
+    public function unbill(Request $request)
+    {
+        $user = $request->user();
+        if (!$user->isAdmin()) abort(403);
+
+        $data = $request->validate([
+            'order_ids'   => 'required|array|min:1',
+            'order_ids.*' => 'integer|exists:work_orders,id',
+        ]);
+
+        $orders = WorkOrder::whereIn('id', $data['order_ids'])
+            ->where('status', 'fatturato')
+            ->get();
+
+        if ($orders->isEmpty()) {
+            return response()->json(['message' => 'Nessun ordine fatturato trovato.'], 422);
+        }
+
+        foreach ($orders as $order) {
+            $order->update(['status' => 'confermato']);
+
+            WorkOrderUpdate::create([
+                'work_order_id' => $order->id,
+                'user_id'       => $user->id,
+                'status_from'   => 'fatturato',
+                'status_to'     => 'confermato',
+            ]);
+        }
+
+        return response()->json(['reset' => $orders->count()]);
+    }
+
+    /**
      * POST /billing/test
      * Verifica la connessione con Fatture in Cloud.
      */

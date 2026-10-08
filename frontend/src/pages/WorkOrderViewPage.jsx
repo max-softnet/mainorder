@@ -191,6 +191,19 @@ export default function WorkOrderViewPage() {
     }
   };
 
+  const handleUnbill = async () => {
+    if (!confirm(`Riportare l'ordine ${order.numero_ordine || order.numero_tmp} da "Fatturato" a "Confermato"?`)) return;
+    setSaving(true);
+    try {
+      await api.post('/billing/unbill', { order_ids: [parseInt(id)] });
+      navigate('/work-orders');
+    } catch (err) {
+      alert('Errore: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleDownloadPdf = async () => {
     try {
       const response = await api.get(`/work-orders/${id}/pdf`, { responseType: 'blob' });
@@ -260,6 +273,12 @@ export default function WorkOrderViewPage() {
               </button>
             );
           })}
+          {user?.role === 'admin' && order.status === 'fatturato' && (
+            <button className="mo-btn mo-btn-outline" disabled={saving} onClick={handleUnbill}
+              style={{ borderColor: '#d97706', color: '#d97706' }}>
+              <i className="bi bi-arrow-counterclockwise me-1" /> Riporta a confermato
+            </button>
+          )}
           <button className="mo-btn mo-btn-ghost" onClick={handleClone} title="Clona ordine">
             <i className="bi bi-copy me-1" /> Clona
           </button>
@@ -327,6 +346,11 @@ export default function WorkOrderViewPage() {
           <button className="mo-btn mo-btn-ghost" style={{ flex: 1 }} onClick={handleClone}>
             <i className="bi bi-copy me-1" /> Clona
           </button>
+          {user?.role === 'admin' && order.status === 'fatturato' && (
+            <button className="mo-btn mo-btn-ghost" style={{ flex: 1, color: '#d97706' }} disabled={saving} onClick={handleUnbill}>
+              <i className="bi bi-arrow-counterclockwise me-1" /> Riporta
+            </button>
+          )}
         </div>
       </div>
 

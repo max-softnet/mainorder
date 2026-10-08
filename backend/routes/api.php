@@ -74,6 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Fatturazione
     Route::post('billing/send', [BillingController::class, 'send']);
+    Route::post('billing/unbill', [BillingController::class, 'unbill']);
     Route::post('billing/test', [BillingController::class, 'testConnection']);
 
     // Statistiche
