@@ -169,19 +169,9 @@ class FattureInCloudService
             $items[] = [
                 'name'      => $nomeTrasporto,
                 'qty'       => 1,
-                'net_price' => (float) ($order->prezzo_cliente ?? 0),
+                'net_price' => (float) ($order->prezzo_cliente ?? 0) + (float) ($order->supplemento_cliente ?? 0),
                 'vat'       => ['id' => $vatId],
             ];
-
-            // Riga supplemento se presente
-            if ($order->supplemento_cliente > 0) {
-                $items[] = [
-                    'name'      => "Supplemento ordine {$order->numero_ordine}",
-                    'qty'       => 1,
-                    'net_price' => (float) $order->supplemento_cliente,
-                    'vat'       => ['id' => $vatId],
-                ];
-            }
         }
 
         $paymentMethodId = $this->paymentMethodId();
