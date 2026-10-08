@@ -121,7 +121,17 @@ export default function ClientViewPage() {
             <Row label="P.IVA"          value={client.partita_iva} />
             <Row label="Cod. Fiscale"   value={client.codice_fiscale} />
             <Row label="Codice SDI"     value={client.sdi} />
-            {client.fic_id && <Row label="ID Fatture in Cloud" value={String(client.fic_id)} />}
+            {client.fic_id && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 0', borderBottom: '1px solid #f3f4f6' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#9ca3af', minWidth: 160 }}>
+                  Fatture in Cloud
+                </span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#ede9fe', color: '#7c3aed', borderRadius: 6, padding: '0.15rem 0.6rem', fontSize: '0.78rem', fontWeight: 600 }}>
+                  <i className="bi bi-cloud-check" />
+                  Sincronizzato · ID {client.fic_id}
+                </span>
+              </div>
+            )}
             <Row label="Indirizzo fatt." value={client.fatturazione_indirizzo} />
             <Row label="Città fatt."    value={[client.fatturazione_citta, client.fatturazione_cap, client.fatturazione_provincia].filter(Boolean).join(' ')} />
 

@@ -42,8 +42,8 @@ export default function ClientsPage() {
     <Layout>
       <div className="d-flex align-items-center justify-content-between mb-4">
         <h1 className="mo-page-title">Clienti</h1>
-        <button className="mo-btn mo-btn-primary" onClick={() => navigate('/clients/new')}>
-          <i className="bi bi-plus-lg" /> Nuovo cliente
+        <button className="mo-btn mo-btn-primary" onClick={() => navigate('/fic-sync')}>
+          <i className="bi bi-cloud-arrow-down me-1" /> Importa da FiC
         </button>
       </div>
 

@@ -66,6 +66,31 @@ export default function ClientFormPage() {
     }
   };
 
+  if (!isEdit) return (
+    <Layout>
+      <div className="d-flex align-items-center gap-3 mb-4">
+        <button className="mo-btn mo-btn-ghost" onClick={() => navigate('/clients')}>
+          <i className="bi bi-arrow-left" />
+        </button>
+        <h1 className="mo-page-title mb-0">Nuovo cliente</h1>
+      </div>
+      <div className="mo-card" style={{ maxWidth: 520 }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+          <i className="bi bi-cloud-arrow-down" style={{ fontSize: '2rem', color: 'var(--mo-purple)', flexShrink: 0, marginTop: 2 }} />
+          <div>
+            <div style={{ fontWeight: 600, marginBottom: '0.4rem' }}>I clienti vengono importati da Fatture in Cloud</div>
+            <div className="mo-text-muted" style={{ fontSize: '0.88rem', marginBottom: '1rem' }}>
+              Per aggiungere un nuovo cliente usa la sincronizzazione FiC: i dati anagrafici, fiscali e il codice SDI vengono letti direttamente da Fatture in Cloud.
+            </div>
+            <button className="mo-btn mo-btn-primary" onClick={() => navigate('/fic-sync')}>
+              <i className="bi bi-cloud-arrow-down me-1" /> Vai a Sync FiC
+            </button>
+          </div>
+        </div>
+      </div>
+    </Layout>
+  );
+
   if (loading) return <Layout><div className="mo-text-muted p-4">Caricamento...</div></Layout>;
 
   return (
