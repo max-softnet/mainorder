@@ -87,7 +87,8 @@ class FicSyncController extends Controller
             }
 
             try {
-                $mapped   = $this->mapFields($fc);
+                $detail   = $this->fic->getClient($ficId);
+                $mapped   = $this->mapFields($detail ?: $fc);
                 $existing = Client::withTrashed()->where('fic_id', $ficId)->first();
 
                 if ($existing) {
@@ -112,8 +113,8 @@ class FicSyncController extends Controller
 
     private function mapFields(array $fc): array
     {
-        // provincia è varchar(5) — tronca a 5 caratteri per sicurezza
-        $provincia = mb_substr($fc['address_province'] ?? '', 0, 5) ?: null;
+        $provincia  = mb_substr($fc['address_province'] ?? '', 0, 5) ?: null;
+        $defaultVat = $fc['default_vat']['value'] ?? null;
 
         return [
             'ragione_sociale'          => $fc['name'] ?? '',
@@ -130,6 +131,7 @@ class FicSyncController extends Controller
             'fatturazione_citta'       => $fc['address_city'] ?? null,
             'fatturazione_cap'         => mb_substr($fc['address_postal_code'] ?? '', 0, 10) ?: null,
             'fatturazione_provincia'   => $provincia,
+            'fic_default_vat'          => $defaultVat !== null ? (float) $defaultVat : null,
         ];
     }
 

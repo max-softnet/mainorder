@@ -129,6 +129,11 @@ export default function ClientViewPage() {
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', background: '#ede9fe', color: '#7c3aed', borderRadius: 6, padding: '0.15rem 0.6rem', fontSize: '0.78rem', fontWeight: 600 }}>
                   <i className="bi bi-cloud-check" />
                   Sincronizzato · ID {client.fic_id}
+                  {client.fic_default_vat != null && (
+                    <span style={{ marginLeft: '0.5rem', background: '#ddd6fe', borderRadius: 4, padding: '0 0.35rem' }}>
+                      IVA {client.fic_default_vat}%
+                    </span>
+                  )}
                 </span>
               </div>
             )}

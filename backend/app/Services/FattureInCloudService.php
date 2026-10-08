@@ -83,6 +83,19 @@ class FattureInCloudService
     }
 
     /**
+     * Legge il dettaglio di un singolo cliente FiC (include default_vat, default_payment_method, ecc.).
+     */
+    public function getClient(int $ficId): array
+    {
+        $response = Http::withHeaders($this->headers())
+            ->get("{$this->baseUrl}/c/{$this->companyId()}/entities/clients/{$ficId}");
+        if ($response->failed()) {
+            return [];
+        }
+        return $response->json('data') ?? [];
+    }
+
+    /**
      * Legge tutti i clienti da FiC con paginazione automatica.
      */
     public function listClients(): array
@@ -172,7 +185,9 @@ class FattureInCloudService
         }
 
         $paymentMethodId = $this->paymentMethodId();
-        $vatRate         = $this->vatRate();
+        $vatRate         = ($client->fic_default_vat !== null)
+            ? (float) $client->fic_default_vat
+            : $this->vatRate();
 
         // FiC arrotonda ogni riga separatamente prima di sommare
         $totaleLordo = array_reduce($items, function (float $carry, array $item) use ($vatRate) {
