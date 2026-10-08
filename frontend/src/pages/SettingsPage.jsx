@@ -41,7 +41,7 @@ const FIELD_ORDER = {
   ],
   fatturazione: [
     'fic_access_token', 'fic_company_id',
-    'fic_vat_id', 'fic_payment_method_id',
+    'fic_vat_id', 'fic_vat_rate', 'fic_payment_method_id',
   ],
 };
 

@@ -35,6 +35,11 @@ class FattureInCloudService
         return (int) (Setting::get('fic_vat_id') ?: 3);
     }
 
+    private function vatRate(): float
+    {
+        return (float) (Setting::get('fic_vat_rate') ?: 22);
+    }
+
     private function paymentMethodId(): ?int
     {
         $id = Setting::get('fic_payment_method_id');
@@ -142,6 +147,13 @@ class FattureInCloudService
             }
         }
 
+        // Calcola il totale netto e il lordo per payments_list
+        $totaleNetto = array_sum(array_column($items, 'net_price'));
+        $vatRate     = $this->vatRate();
+        $totaleLordo = round($totaleNetto * (1 + $vatRate / 100), 2);
+
+        $paymentMethodId = $this->paymentMethodId();
+
         $body = [
             'data' => [
                 'type'   => 'invoice',
@@ -151,12 +163,18 @@ class FattureInCloudService
                 'items_list' => $items,
                 'currency' => ['id' => 'EUR', 'exchange_rate' => '1.00000', 'symbol' => '€'],
                 'language' => ['code' => 'it', 'name' => 'Italiano'],
+                'payments_list' => [[
+                    'amount'      => $totaleLordo,
+                    'due_date'    => now()->format('Y-m-d'),
+                    'status'      => 'not_paid',
+                    'payment_account' => $paymentMethodId ? ['id' => $paymentMethodId] : null,
+                ]],
             ],
         ];
 
-        // Il metodo di pagamento non viene inviato: FiC richiede che payments_list
-        // abbia un amount esatto pari al totale lordo, che non è calcolabile qui
-        // senza conoscere l'aliquota IVA. L'utente imposta il pagamento in FiC.
+        if ($paymentMethodId) {
+            $body['data']['payment_method'] = ['id' => $paymentMethodId];
+        }
 
         // Abilita e-invoice se il cliente ha SDI
         if (filled($client->sdi)) {
