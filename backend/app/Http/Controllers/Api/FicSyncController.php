@@ -12,13 +12,30 @@ class FicSyncController extends Controller
     public function __construct(private FattureInCloudService $fic) {}
 
     /**
-     * DEBUG: ritorna il raw JSON del primo cliente FiC (da rimuovere dopo).
+     * Aggiorna fic_default_vat su tutti i clienti locali con fic_id.
      */
-    public function debugRaw(Request $request)
+    public function syncVat(Request $request)
     {
-        if (!$request->user()->isAdmin()) abort(403);
-        $clients = $this->fic->listClients();
-        return response()->json($clients[0] ?? []);
+        if (!$request->user()->isAdmin() && !$request->user()->isOperatore()) abort(403);
+
+        $clients  = Client::whereNotNull('fic_id')->get();
+        $updated  = 0;
+        $errors   = [];
+
+        foreach ($clients as $client) {
+            try {
+                $detail = $this->fic->getClient((int) $client->fic_id);
+                $vat    = $detail['default_vat']['value'] ?? null;
+                if ($vat !== null) {
+                    $client->update(['fic_default_vat' => (float) $vat]);
+                    $updated++;
+                }
+            } catch (\Exception $e) {
+                $errors[] = "{$client->ragione_sociale}: {$e->getMessage()}";
+            }
+        }
+
+        return response()->json(['updated' => $updated, 'errors' => $errors]);
     }
 
     /**

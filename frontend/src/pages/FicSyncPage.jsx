@@ -17,6 +17,8 @@ export default function FicSyncPage() {
   const [importing, setImporting] = useState(false);
   const [selected, setSelected] = useState(new Set());
   const [result, setResult]     = useState(null);
+  const [vatResult, setVatResult] = useState(null);
+  const [syncingVat, setSyncingVat] = useState(false);
   const [error, setError]       = useState(null);
 
   const loadPreview = async () => {
@@ -72,6 +74,20 @@ export default function FicSyncPage() {
     }
   };
 
+  const handleSyncVat = async () => {
+    setSyncingVat(true);
+    setError(null);
+    setVatResult(null);
+    try {
+      const { data } = await api.post('/fic/clients/sync-vat');
+      setVatResult(data);
+    } catch (e) {
+      setError(e.response?.data?.message || e.message || 'Errore aggiornamento IVA.');
+    } finally {
+      setSyncingVat(false);
+    }
+  };
+
   const newCount    = preview?.filter(r => r.status === 'new').length ?? 0;
   const updateCount = preview?.filter(r => r.status === 'update').length ?? 0;
   const sameCount   = preview?.filter(r => r.status === 'same').length ?? 0;
@@ -87,11 +103,27 @@ export default function FicSyncPage() {
           Legge l'anagrafica clienti da Fatture in Cloud e mostra quali sono nuovi o aggiornabili rispetto al database locale.
           I clienti marcati come <strong>Uguale</strong> non vengono modificati.
         </p>
-        <button className="mo-btn mo-btn-primary" onClick={loadPreview} disabled={loading}>
-          {loading
-            ? <><span className="spinner-border spinner-border-sm me-2" />Caricamento da FiC...</>
-            : <><i className="bi bi-cloud-download me-2" />Carica anteprima da Fatture in Cloud</>}
-        </button>
+        <div className="d-flex gap-2 flex-wrap">
+          <button className="mo-btn mo-btn-primary" onClick={loadPreview} disabled={loading}>
+            {loading
+              ? <><span className="spinner-border spinner-border-sm me-2" />Caricamento da FiC...</>
+              : <><i className="bi bi-cloud-download me-2" />Carica anteprima da Fatture in Cloud</>}
+          </button>
+          <button className="mo-btn mo-btn-outline" onClick={handleSyncVat} disabled={syncingVat}>
+            {syncingVat
+              ? <><span className="spinner-border spinner-border-sm me-2" />Aggiornamento IVA...</>
+              : <><i className="bi bi-percent me-1" />Aggiorna IVA su tutti i clienti</>}
+          </button>
+        </div>
+        {vatResult && (
+          <div className="mt-3" style={{ fontSize: '0.88rem', color: '#166534', fontWeight: 500 }}>
+            <i className="bi bi-check-circle me-1" />
+            Aliquota IVA aggiornata su {vatResult.updated} clienti.
+            {vatResult.errors?.length > 0 && (
+              <span style={{ color: '#991b1b', marginLeft: 8 }}>{vatResult.errors.length} errori.</span>
+            )}
+          </div>
+        )}
       </div>
 
       {error && (
