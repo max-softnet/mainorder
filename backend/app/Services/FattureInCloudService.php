@@ -37,7 +37,22 @@ class FattureInCloudService
 
     private function vatRate(): float
     {
-        return (float) (Setting::get('fic_vat_rate') ?: 22);
+        // Se configurata manualmente, usa quella
+        $manual = Setting::get('fic_vat_rate');
+        if ($manual !== null && $manual !== '') {
+            return (float) $manual;
+        }
+        // Altrimenti leggi l'aliquota reale da FiC per il vatId configurato
+        try {
+            $vatId    = $this->vatId();
+            $response = Http::withHeaders($this->headers())
+                ->get("{$this->baseUrl}/c/{$this->companyId()}/info/vat_types/{$vatId}");
+            if ($response->ok()) {
+                $value = $response->json('data.value');
+                if ($value !== null) return (float) $value;
+            }
+        } catch (\Throwable) {}
+        return 22.0;
     }
 
     private function paymentMethodId(): ?int
