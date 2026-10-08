@@ -42,14 +42,23 @@ class FattureInCloudService
         if ($manual !== null && $manual !== '') {
             return (float) $manual;
         }
-        // Altrimenti leggi l'aliquota reale da FiC per il vatId configurato
+        // Leggi l'aliquota dalla lista FiC e trova quella con l'ID configurato
         try {
             $vatId    = $this->vatId();
             $response = Http::withHeaders($this->headers())
-                ->get("{$this->baseUrl}/c/{$this->companyId()}/info/vat_types/{$vatId}");
+                ->get("{$this->baseUrl}/c/{$this->companyId()}/info/vat_types");
             if ($response->ok()) {
-                $value = $response->json('data.value');
-                if ($value !== null) return (float) $value;
+                $list = $response->json('data') ?? [];
+                foreach ($list as $vat) {
+                    if (($vat['id'] ?? null) == $vatId) {
+                        $rate = $vat['value'] ?? $vat['rate'] ?? null;
+                        if ($rate !== null) {
+                            // Salva in cache per le chiamate successive
+                            Setting::set('fic_vat_rate', (string) $rate);
+                            return (float) $rate;
+                        }
+                    }
+                }
             }
         } catch (\Throwable) {}
         return 10.0;
