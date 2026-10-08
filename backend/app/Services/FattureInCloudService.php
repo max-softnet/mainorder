@@ -52,7 +52,7 @@ class FattureInCloudService
                 if ($value !== null) return (float) $value;
             }
         } catch (\Throwable) {}
-        return 22.0;
+        return 10.0;
     }
 
     private function paymentMethodId(): ?int
@@ -207,21 +207,29 @@ class FattureInCloudService
             ->post("{$this->baseUrl}/c/{$this->companyId()}/issued_documents", $body);
 
         if ($response->failed()) {
-            $errorBody  = $response->json();
-            $msg        = $errorBody['error']['message'] ?? $response->body();
+            $errorBody = $response->json();
+            $msg       = $errorBody['error']['message'] ?? $response->body();
 
-            // FiC restituisce a volte il totale atteso in validation_result
-            $atteso = $errorBody['error']['validation_result']['amount'] ?? null;
+            // FiC restituisce il totale esatto atteso in extra.totals.amount_due
+            $amountDue = $errorBody['error']['extra']['totals']['amount_due'] ?? null;
 
-            Log::error('FiC createInvoice error', [
-                'client'       => $client->id,
-                'response'     => $errorBody,
-                'totale_netto' => $totaleNetto,
-                'atteso'       => $atteso,
-            ]);
+            // Retry con amount_due corretto
+            if ($amountDue !== null) {
+                $body['data']['payments_list'][0]['amount'] = (float) $amountDue;
+                if ($paymentMethodId) {
+                    $body['data']['payment_method'] = ['id' => $paymentMethodId];
+                    $body['data']['payments_list'][0]['payment_account'] = ['id' => $paymentMethodId];
+                }
+                $retry = Http::withHeaders($this->headers(true))
+                    ->post("{$this->baseUrl}/c/{$this->companyId()}/issued_documents", $body);
+                if ($retry->ok()) {
+                    return $retry->json('data') ?? [];
+                }
+                $msg = $retry->json('error.message') ?? $retry->body();
+            }
 
-            $debugBody = mb_substr(json_encode($errorBody), 0, 500);
-            throw new \RuntimeException("Errore creazione fattura FiC: {$msg} [lordo={$totaleLordo}, iva={$vatRate}%] RESP: {$debugBody}");
+            Log::error('FiC createInvoice error', ['client' => $client->id, 'response' => $errorBody]);
+            throw new \RuntimeException("Errore creazione fattura FiC: {$msg}");
         }
 
         return $response->json('data') ?? [];
