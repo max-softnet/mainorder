@@ -184,12 +184,12 @@ class FattureInCloudService
                 'items_list' => $items,
                 'currency' => ['id' => 'EUR', 'exchange_rate' => '1.00000', 'symbol' => '€'],
                 'language' => ['code' => 'it', 'name' => 'Italiano'],
-                'payments_list' => [[
+                'payments_list' => [array_filter([
                     'amount'          => $totaleLordo,
                     'due_date'        => now()->format('Y-m-d'),
                     'status'          => 'not_paid',
                     'payment_account' => $paymentMethodId ? ['id' => $paymentMethodId] : null,
-                ]],
+                ], fn($v) => $v !== null)],
             ],
         ];
 
@@ -215,10 +215,15 @@ class FattureInCloudService
 
             // Retry con amount_due corretto
             if ($amountDue !== null) {
-                $body['data']['payments_list'][0]['amount'] = (float) $amountDue;
+                $paymentEntry = array_filter([
+                    'amount'          => (float) $amountDue,
+                    'due_date'        => now()->format('Y-m-d'),
+                    'status'          => 'not_paid',
+                    'payment_account' => $paymentMethodId ? ['id' => $paymentMethodId] : null,
+                ], fn($v) => $v !== null);
+                $body['data']['payments_list'] = [$paymentEntry];
                 if ($paymentMethodId) {
                     $body['data']['payment_method'] = ['id' => $paymentMethodId];
-                    $body['data']['payments_list'][0]['payment_account'] = ['id' => $paymentMethodId];
                 }
                 $retry = Http::withHeaders($this->headers(true))
                     ->post("{$this->baseUrl}/c/{$this->companyId()}/issued_documents", $body);
