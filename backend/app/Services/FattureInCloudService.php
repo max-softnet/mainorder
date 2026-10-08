@@ -257,7 +257,7 @@ class FattureInCloudService
     {
         // Se il cliente ha il fic_id, collegalo all'anagrafica FiC esistente
         if ($client->fic_id) {
-            return ['id' => (int) $client->fic_id];
+            return ['id' => (int) $client->fic_id, 'name' => $client->ragione_sociale];
         }
 
         // Altrimenti costruisci l'entity inline
