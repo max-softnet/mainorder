@@ -230,7 +230,11 @@ class FattureInCloudService
                 if ($retry->ok()) {
                     return $retry->json('data') ?? [];
                 }
-                $msg = $retry->json('error.message') ?? $retry->body();
+                $retryBody = $retry->json();
+                $msg = $retryBody['error']['message'] ?? $retry->body();
+                Log::error('FiC retry error', ['retry_body_sent' => $body, 'retry_response' => $retryBody]);
+                $msgDebug = mb_substr(json_encode($retryBody), 0, 400);
+                throw new \RuntimeException("Errore creazione fattura FiC (retry): {$msg} | {$msgDebug}");
             }
 
             Log::error('FiC createInvoice error', ['client' => $client->id, 'response' => $errorBody]);
