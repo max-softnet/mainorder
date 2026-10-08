@@ -147,12 +147,18 @@ class FattureInCloudService
             }
         }
 
-        // Calcola il totale netto e il lordo per payments_list
-        $totaleNetto = array_sum(array_column($items, 'net_price'));
-        $vatRate     = $this->vatRate();
-        $totaleLordo = round($totaleNetto * (1 + $vatRate / 100), 2);
-
         $paymentMethodId = $this->paymentMethodId();
+        $vatRate         = $this->vatRate();
+
+        // FiC arrotonda ogni riga separatamente prima di sommare
+        $totaleLordo = array_reduce($items, function (float $carry, array $item) use ($vatRate) {
+            $netto  = round((float) $item['net_price'] * (int) $item['qty'], 2);
+            $iva    = round($netto * $vatRate / 100, 2);
+            return $carry + $netto + $iva;
+        }, 0.0);
+        $totaleLordo = round($totaleLordo, 2);
+
+        $totaleNetto = array_sum(array_column($items, 'net_price'));
 
         $body = [
             'data' => [
@@ -164,9 +170,9 @@ class FattureInCloudService
                 'currency' => ['id' => 'EUR', 'exchange_rate' => '1.00000', 'symbol' => '€'],
                 'language' => ['code' => 'it', 'name' => 'Italiano'],
                 'payments_list' => [[
-                    'amount'      => $totaleLordo,
-                    'due_date'    => now()->format('Y-m-d'),
-                    'status'      => 'not_paid',
+                    'amount'          => $totaleLordo,
+                    'due_date'        => now()->format('Y-m-d'),
+                    'status'          => 'not_paid',
                     'payment_account' => $paymentMethodId ? ['id' => $paymentMethodId] : null,
                 ]],
             ],
@@ -186,9 +192,20 @@ class FattureInCloudService
             ->post("{$this->baseUrl}/c/{$this->companyId()}/issued_documents", $body);
 
         if ($response->failed()) {
-            $msg = $response->json('error.message') ?? $response->body();
-            Log::error('FiC createInvoice error', ['client' => $client->id, 'body' => $response->body()]);
-            throw new \RuntimeException("Errore creazione fattura FiC: {$msg}");
+            $errorBody  = $response->json();
+            $msg        = $errorBody['error']['message'] ?? $response->body();
+
+            // FiC restituisce a volte il totale atteso in validation_result
+            $atteso = $errorBody['error']['validation_result']['amount'] ?? null;
+
+            Log::error('FiC createInvoice error', [
+                'client'       => $client->id,
+                'response'     => $errorBody,
+                'totale_netto' => $totaleNetto,
+                'atteso'       => $atteso,
+            ]);
+
+            throw new \RuntimeException("Errore creazione fattura FiC: {$msg} [lordo_calcolato={$totaleLordo}, netto={$totaleNetto}]");
         }
 
         return $response->json('data') ?? [];
