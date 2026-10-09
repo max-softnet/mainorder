@@ -509,7 +509,9 @@ function ConfirmModal({ show, onClose, onConfirm, sending, selectedOrders, total
 
           {/* Riepilogo per cliente */}
           <div className="d-flex flex-column gap-2 mb-4">
-            {Object.entries(byClient).map(([nome, { orders, total }]) => (
+            {Object.entries(byClient).map(([nome, { orders, total }]) => {
+              const iva = orders[0]?.cliente?.fic_default_vat;
+              return (
               <div key={nome} className="d-flex align-items-center justify-content-between p-2"
                 style={{ background: '#f9fafb', borderRadius: 8 }}>
                 <div>
@@ -517,10 +519,20 @@ function ConfirmModal({ show, onClose, onConfirm, sending, selectedOrders, total
                   <span className="mo-text-muted ms-2" style={{ fontSize: '0.8rem' }}>
                     {orders.length} {orders.length === 1 ? 'ordine' : 'ordini'}
                   </span>
+                  {iva != null && (
+                    <span style={{
+                      marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 600,
+                      background: '#ede9fe', color: '#7c3aed',
+                      borderRadius: 6, padding: '0.1rem 0.45rem',
+                    }}>
+                      IVA {iva}%
+                    </span>
+                  )}
                 </div>
                 <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>€ {fmt(total)}</span>
               </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="d-flex align-items-center justify-content-between p-3 mb-4"

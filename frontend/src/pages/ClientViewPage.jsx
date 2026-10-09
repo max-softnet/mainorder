@@ -132,6 +132,11 @@ export default function ClientViewPage() {
                   {client.fic_default_vat != null && (
                     <span style={{ marginLeft: '0.5rem', background: '#ddd6fe', borderRadius: 4, padding: '0 0.35rem' }}>
                       IVA {client.fic_default_vat}%
+                      {client.fic_default_vat_id != null && (
+                        <span style={{ opacity: 0.65, marginLeft: '0.25rem', fontWeight: 400 }}>
+                          (ID {client.fic_default_vat_id})
+                        </span>
+                      )}
                     </span>
                   )}
                 </span>

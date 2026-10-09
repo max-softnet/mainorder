@@ -102,6 +102,11 @@
     </table>
     @endif
 
+    <div style="border: 2px solid #cc0000; border-radius: 6px; padding: 14px 16px; margin: 20px 0 4px 0; background: #fff5f5; color: #cc0000; font-size: 15px; font-weight: 700; text-transform: uppercase; line-height: 1.55;">
+      Si ricorda che i DDT relativi ai viaggi effettuati devono essere inviati via e-mail / whatsapp non appena terminato il carico.<br><br>
+      In caso di mancato invio, i pagamenti potranno subire ritardi, in quanto non sarà possibile procedere alla fatturazione dei viaggi privi della necessaria documentazione.
+    </div>
+
     <p style="margin-top:20px;">
       <span class="badge">✓ Confermato</span>
     </p>
