@@ -175,9 +175,7 @@ class FattureInCloudService
         }
 
         $paymentMethodId = $this->paymentMethodId();
-        $vatRate         = ($client->fic_default_vat !== null)
-            ? (float) $client->fic_default_vat
-            : $this->vatRate();
+        $vatRate         = $this->vatRate();
 
         // FiC arrotonda ogni riga separatamente prima di sommare
         $totaleLordo = array_reduce($items, function (float $carry, array $item) use ($vatRate) {
@@ -224,8 +222,8 @@ class FattureInCloudService
             $errorBody = $response->json();
             $msg       = $errorBody['error']['message'] ?? $response->body();
 
-            // FiC restituisce il totale esatto atteso in extra.totals.amount_due
-            $amountDue = $errorBody['error']['extra']['totals']['amount_due'] ?? null;
+            // FiC restituisce il totale esatto atteso in extra.totals.amount_due (root level, non dentro error)
+            $amountDue = $errorBody['extra']['totals']['amount_due'] ?? null;
 
             // Retry con amount_due corretto
             if ($amountDue !== null) {
