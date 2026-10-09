@@ -123,6 +123,7 @@ export default function BillingPage() {
         order_ids: Array.from(selected),
       });
       setResults(data);
+      setShowModal(false);
       setSelected(new Set());
       // Ricarica la lista (gli ordini fatturati non appariranno più)
       fetchOrders(1);

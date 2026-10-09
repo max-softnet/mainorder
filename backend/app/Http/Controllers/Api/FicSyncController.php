@@ -26,8 +26,9 @@ class FicSyncController extends Controller
             try {
                 $detail = $this->fic->getClient((int) $client->fic_id);
                 $vat    = $detail['default_vat']['value'] ?? null;
+                $vatId  = isset($detail['default_vat']['id']) ? (int) $detail['default_vat']['id'] : null;
                 if ($vat !== null) {
-                    $client->update(['fic_default_vat' => (float) $vat]);
+                    $client->update(['fic_default_vat' => (float) $vat, 'fic_default_vat_id' => $vatId]);
                     $updated++;
                 }
             } catch (\Exception $e) {
@@ -131,7 +132,8 @@ class FicSyncController extends Controller
     private function mapFields(array $fc): array
     {
         $provincia  = mb_substr($fc['address_province'] ?? '', 0, 5) ?: null;
-        $defaultVat = $fc['default_vat']['value'] ?? null;
+        $defaultVat   = $fc['default_vat']['value'] ?? null;
+        $defaultVatId = isset($fc['default_vat']['id']) ? (int) $fc['default_vat']['id'] : null;
 
         return [
             'ragione_sociale'          => $fc['name'] ?? '',
@@ -149,6 +151,7 @@ class FicSyncController extends Controller
             'fatturazione_cap'         => mb_substr($fc['address_postal_code'] ?? '', 0, 10) ?: null,
             'fatturazione_provincia'   => $provincia,
             'fic_default_vat'          => $defaultVat !== null ? (float) $defaultVat : null,
+            'fic_default_vat_id'       => $defaultVatId,
         ];
     }
 

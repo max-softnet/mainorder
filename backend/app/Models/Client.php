@@ -10,7 +10,7 @@ class Client extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'fic_id', 'fic_default_vat',
+        'fic_id', 'fic_default_vat', 'fic_default_vat_id',
         'ragione_sociale',
         'indirizzo', 'citta', 'cap', 'provincia',
         'email', 'telefono', 'sito_web', 'referente', 'note',

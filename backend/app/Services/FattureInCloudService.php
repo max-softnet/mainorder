@@ -153,7 +153,9 @@ class FattureInCloudService
     public function createInvoice(Client $client, array $orders): array
     {
         $items = [];
-        $vatId = $this->vatId();
+        // Usa IVA del cliente se disponibile, altrimenti globale
+        $vatId   = ($client->fic_default_vat_id !== null) ? (int) $client->fic_default_vat_id : $this->vatId();
+        $vatRate = ($client->fic_default_vat !== null)    ? (float) $client->fic_default_vat  : $this->vatRate();
 
         foreach ($orders as $order) {
             $tratta   = $this->buildTratta($order);
@@ -175,7 +177,6 @@ class FattureInCloudService
         }
 
         $paymentMethodId = $this->paymentMethodId();
-        $vatRate         = $this->vatRate();
 
         // FiC arrotonda ogni riga separatamente prima di sommare
         $totaleLordo = array_reduce($items, function (float $carry, array $item) use ($vatRate) {
