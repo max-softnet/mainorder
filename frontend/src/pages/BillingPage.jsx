@@ -43,6 +43,28 @@ export default function BillingPage() {
   const [sending, setSending] = useState(false);
   const [results, setResults] = useState(null);
 
+  // Modale Rif. DDT
+  const [dttModal, setDttModal] = useState(null);
+  const [dttValue, setDttValue] = useState('');
+  const [dttSaving, setDttSaving] = useState(false);
+
+  const openDtt = (e, o) => {
+    e.stopPropagation();
+    setDttModal({ id: o.id, numero: o.numero_ordine || o.numero_tmp });
+    setDttValue(o.rif_ddt || '');
+  };
+
+  const saveDtt = async () => {
+    setDttSaving(true);
+    try {
+      await api.patch(`/work-orders/${dttModal.id}/rif-ddt`, { rif_ddt: dttValue });
+      setOrders(prev => prev.map(o => o.id === dttModal.id ? { ...o, rif_ddt: dttValue } : o));
+      setDttModal(null);
+    } finally {
+      setDttSaving(false);
+    }
+  };
+
   const fetchOrders = useCallback(async (p = 1, filtro = statoFiltro) => {
     setLoading(true);
     setSelected(new Set());
@@ -295,8 +317,15 @@ export default function BillingPage() {
                       {!clienteId && (
                         <td>{o.cliente?.ragione_sociale || <span className="mo-text-muted">—</span>}</td>
                       )}
-                      <td className="mo-text-muted" style={{ fontSize: '0.83rem' }}>
-                        {o.rif_ddt || '—'}
+                      <td style={{ fontSize: '0.83rem' }}>
+                        <span
+                          onClick={e => openDtt(e, o)}
+                          title="Modifica Rif. DDT"
+                          style={{ cursor: 'pointer', color: o.rif_ddt ? '#374151' : '#9ca3af', fontFamily: o.rif_ddt ? 'monospace' : undefined }}
+                        >
+                          {o.rif_ddt || '—'}
+                          <i className="bi bi-pencil ms-1" style={{ fontSize: '0.7rem', opacity: 0.4 }} />
+                        </span>
                       </td>
                       <td style={{ fontSize: '0.85rem' }}>
                         {o.carrier?.denominazione || <span className="mo-text-muted">—</span>}
@@ -396,6 +425,39 @@ export default function BillingPage() {
           <span style={{ color: '#dc2626' }}>{results.error}</span>
           <button className="mo-btn mo-btn-ghost ms-3" style={{ fontSize: '0.82rem' }}
             onClick={() => setResults(null)}>Chiudi</button>
+        </div>
+      )}
+
+      {/* Modale Rif. DDT */}
+      {dttModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setDttModal(null)}>
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.4)' }} />
+          <div style={{ position: 'relative', background: '#fff', borderRadius: 12, padding: '1.5rem', width: '100%', maxWidth: 400, boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: 4 }}>
+              <i className="bi bi-file-earmark-text me-2" style={{ color: 'var(--mo-purple)' }} />
+              Riferimento DDT
+            </div>
+            <div style={{ fontSize: '0.82rem', color: '#6b7280', marginBottom: 16 }}>
+              Ordine {dttModal.numero}
+            </div>
+            <input
+              className="mo-form-control"
+              type="text"
+              placeholder="Es. DDT-2024-001"
+              value={dttValue}
+              onChange={e => setDttValue(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') saveDtt(); if (e.key === 'Escape') setDttModal(null); }}
+              autoFocus
+            />
+            <div className="d-flex gap-2 justify-content-end mt-3">
+              <button className="mo-btn mo-btn-ghost" onClick={() => setDttModal(null)}>Annulla</button>
+              <button className="mo-btn mo-btn-primary" onClick={saveDtt} disabled={dttSaving}>
+                {dttSaving ? 'Salvataggio...' : 'Salva'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
