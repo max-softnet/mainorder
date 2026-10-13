@@ -91,9 +91,9 @@ class CarrierController extends Controller
     {
         $request->validate([
             'contacts'             => 'required|array|min:1',
-            'contacts.*.cognome'   => 'required|string|max:100',
-            'contacts.*.nome'      => 'required|string|max:100',
-            'contacts.*.email'     => 'nullable|email|max:255',
+            'contacts.*.cognome'   => 'nullable|string|max:100',
+            'contacts.*.nome'      => 'nullable|string|max:100',
+            'contacts.*.email'     => 'required|email|max:255',
             'contacts.*.telefono'  => 'nullable|string|max:30',
             'contacts.*.ruolo'     => 'nullable|string|max:100',
             'contacts.*.note'      => 'nullable|string',

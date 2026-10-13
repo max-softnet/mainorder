@@ -338,11 +338,11 @@ function ContactRow({ contact, idx, onChange, onRemove, canRemove, errors }) {
         )}
       </div>
       <div className="row g-2">
-        <div className="col-md-3"><Field label="Cognome *"><input className="mo-form-control" value={contact.cognome} onChange={onChange('cognome')} required /></Field></div>
-        <div className="col-md-3"><Field label="Nome *"><input className="mo-form-control" value={contact.nome} onChange={onChange('nome')} required /></Field></div>
+        <div className="col-md-3"><Field label="Cognome"><input className="mo-form-control" value={contact.cognome} onChange={onChange('cognome')} /></Field></div>
+        <div className="col-md-3"><Field label="Nome"><input className="mo-form-control" value={contact.nome} onChange={onChange('nome')} /></Field></div>
         <div className="col-md-3"><Field label="Ruolo"><input className="mo-form-control" value={contact.ruolo} onChange={onChange('ruolo')} placeholder="es. Responsabile" /></Field></div>
         <div className="col-md-3"><Field label="Telefono"><input className="mo-form-control" value={contact.telefono} onChange={onChange('telefono')} /></Field></div>
-        <div className="col-md-6"><Field label="Email ordini"><input className="mo-form-control" type="email" value={contact.email} onChange={onChange('email')} /></Field></div>
+        <div className="col-md-6"><Field label="Email ordini *"><input className="mo-form-control" type="email" value={contact.email} onChange={onChange('email')} required /></Field></div>
         <div className="col-md-6"><Field label="Note"><input className="mo-form-control" value={contact.note} onChange={onChange('note')} /></Field></div>
       </div>
     </div>
@@ -353,11 +353,11 @@ function ContactEditRow({ data, onChange, onSave, onCancel, saving }) {
   return (
     <div>
       <div className="row g-2 mb-2">
-        <div className="col-md-3"><Field label="Cognome *"><input className="mo-form-control" value={data.cognome} onChange={e => onChange('cognome', e.target.value)} required /></Field></div>
-        <div className="col-md-3"><Field label="Nome *"><input className="mo-form-control" value={data.nome} onChange={e => onChange('nome', e.target.value)} required /></Field></div>
+        <div className="col-md-3"><Field label="Cognome"><input className="mo-form-control" value={data.cognome} onChange={e => onChange('cognome', e.target.value)} /></Field></div>
+        <div className="col-md-3"><Field label="Nome"><input className="mo-form-control" value={data.nome} onChange={e => onChange('nome', e.target.value)} /></Field></div>
         <div className="col-md-3"><Field label="Ruolo"><input className="mo-form-control" value={data.ruolo || ''} onChange={e => onChange('ruolo', e.target.value)} placeholder="es. Responsabile" /></Field></div>
         <div className="col-md-3"><Field label="Telefono"><input className="mo-form-control" value={data.telefono || ''} onChange={e => onChange('telefono', e.target.value)} /></Field></div>
-        <div className="col-md-6"><Field label="Email ordini"><input className="mo-form-control" type="email" value={data.email || ''} onChange={e => onChange('email', e.target.value)} /></Field></div>
+        <div className="col-md-6"><Field label="Email ordini *"><input className="mo-form-control" type="email" value={data.email || ''} onChange={e => onChange('email', e.target.value)} required /></Field></div>
         <div className="col-md-6"><Field label="Note"><input className="mo-form-control" value={data.note || ''} onChange={e => onChange('note', e.target.value)} /></Field></div>
       </div>
       <div className="d-flex gap-2">
