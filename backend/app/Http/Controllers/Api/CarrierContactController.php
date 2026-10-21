@@ -21,9 +21,9 @@ class CarrierContactController extends Controller
         $this->authorizeAdminOrOperatore($request);
 
         $data = $request->validate([
-            'cognome'  => 'required|string|max:100',
-            'nome'     => 'required|string|max:100',
-            'email'    => 'nullable|email|max:255',
+            'cognome'  => 'nullable|string|max:100',
+            'nome'     => 'nullable|string|max:100',
+            'email'    => 'required|email|max:255',
             'telefono' => 'nullable|string|max:30',
             'ruolo'    => 'nullable|string|max:100',
             'note'     => 'nullable|string',
@@ -41,9 +41,9 @@ class CarrierContactController extends Controller
         abort_if($contact->carrier_id !== $carrier->id, 404);
 
         $data = $request->validate([
-            'cognome'  => 'required|string|max:100',
-            'nome'     => 'required|string|max:100',
-            'email'    => 'nullable|email|max:255',
+            'cognome'  => 'nullable|string|max:100',
+            'nome'     => 'nullable|string|max:100',
+            'email'    => 'required|email|max:255',
             'telefono' => 'nullable|string|max:30',
             'ruolo'    => 'nullable|string|max:100',
             'note'     => 'nullable|string',
