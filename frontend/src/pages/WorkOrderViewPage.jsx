@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import usePageTitle from '../hooks/usePageTitle';
 import { useAuth } from '../context/AuthContext';
@@ -162,7 +162,7 @@ export default function WorkOrderViewPage() {
 
   const handleClone = async () => {
     const { data } = await api.get(`/work-orders/${id}`);
-    const { stops: rawStops, carrier_contacts: cc, documents, numero_ordine, numero_tmp, status, ...rest } = data;
+    const { stops: rawStops, carrier_contacts: cc, documents, numero_ordine, numero_tmp, status, nome_autista, targa_motrice, targa_rimorchio, rif_ddt, annotazioni_mail, annotazioni, ...rest } = data;
     const DATE_FIELDS = ['data_ordine', 'data_carico', 'data_scarico'];
     DATE_FIELDS.forEach(f => { if (rest[f]) rest[f] = rest[f].slice(0, 10); });
     const cloneForm = {
@@ -357,8 +357,8 @@ export default function WorkOrderViewPage() {
       {/* Intestazione */}
       <Section title="Intestazione ordine">
         <Row label="Data ordine" value={order.data_ordine ? new Date(order.data_ordine).toLocaleDateString('it-IT') : null} />
-        <Row label="Cliente" value={order.cliente?.ragione_sociale} />
-        <Row label="Trasportatore" value={order.carrier?.denominazione} />
+        <Row label="Cliente" value={order.cliente ? <Link to={`/clients/${order.cliente_id}`} style={{ color: 'inherit' }}>{order.cliente.ragione_sociale}</Link> : null} />
+        <Row label="Trasportatore" value={order.carrier ? <Link to={`/carriers/${order.carrier_id}`} style={{ color: 'inherit' }}>{order.carrier.denominazione}</Link> : null} />
         <Row label="Creato da" value={order.creator?.name ?? null} />
       </Section>
 
