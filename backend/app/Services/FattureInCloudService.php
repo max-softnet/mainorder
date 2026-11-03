@@ -210,14 +210,13 @@ class FattureInCloudService
             $body['data']['payment_method'] = ['id' => $paymentMethodId];
         }
 
-        // Abilita e-invoice se il cliente ha SDI
-        if (filled($client->sdi)) {
+        // Abilita e-invoice se il cliente ha SDI e il metodo di pagamento è configurato
+        if (filled($client->sdi) && $paymentMethodId) {
             $body['data']['e_invoice'] = true;
-            $eiData = ['vat_kind' => 'I'];
-            if ($paymentMethodId) {
-                $eiData['payment_method'] = ['id' => $paymentMethodId];
-            }
-            $body['data']['ei_data'] = $eiData;
+            $body['data']['ei_data']   = [
+                'vat_kind'       => 'I',
+                'payment_method' => ['id' => $paymentMethodId],
+            ];
         }
 
         $response = Http::withHeaders($this->headers(true))
