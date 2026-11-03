@@ -158,14 +158,28 @@ class FattureInCloudService
         $vatRate = ($client->fic_default_vat !== null)    ? (float) $client->fic_default_vat  : $this->vatRate();
 
         foreach ($orders as $order) {
-            $tratta   = $this->buildTratta($order);
-            $dataStr  = $order->data_carico
+            $dataStr = $order->data_carico
                 ? $order->data_carico->format('d/m/Y')
                 : '—';
 
-            $nomeTrasporto = trim("Trasporto {$order->numero_ordine} – {$tratta} del {$dataStr}");
+            $stops   = $order->relationLoaded('stops') ? $order->stops : collect();
+            $carico  = $stops->where('tipo', 'carico')->sortBy('sequenza')->first();
+            $scarico = $stops->where('tipo', 'scarico')->sortByDesc('sequenza')->last();
+
+            $fromCitta = $carico?->citta ?? '';
+            $fromProv  = $carico?->provincia ?? '';
+            $toCitta   = $scarico?->citta ?? '';
+            $toProv    = $scarico?->provincia ?? '';
+
+            $fromPart = $fromCitta . ($fromProv ? " ({$fromProv})" : '');
+            $toPart   = $toCitta   . ($toProv   ? " ({$toProv})"   : '');
+
+            $nomeTrasporto = "Trasporto del {$dataStr}";
+            if ($fromPart || $toPart) {
+                $nomeTrasporto .= " - da {$fromPart} a {$toPart}";
+            }
             if ($order->rif_ddt) {
-                $nomeTrasporto .= " (DDT: {$order->rif_ddt})";
+                $nomeTrasporto .= " DDT: {$order->rif_ddt}";
             }
 
             $items[] = [
