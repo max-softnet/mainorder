@@ -164,7 +164,7 @@ class FattureInCloudService
 
             $stops   = $order->relationLoaded('stops') ? $order->stops : collect();
             $carico  = $stops->where('tipo', 'carico')->sortBy('sequenza')->first();
-            $scarico = $stops->where('tipo', 'scarico')->sortByDesc('sequenza')->last();
+            $scarico = $stops->where('tipo', 'scarico')->sortBy('sequenza')->last();
 
             $fromCitta = $carico?->citta ?? '';
             $fromProv  = $carico?->provincia ?? '';
