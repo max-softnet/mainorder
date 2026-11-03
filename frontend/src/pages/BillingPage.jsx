@@ -35,8 +35,9 @@ export default function BillingPage() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
 
-  // Selezione
+  // Selezione — ordersById accumula i dati cross-page
   const [selected, setSelected] = useState(new Set());
+  const [ordersById, setOrdersById] = useState({});
 
   // Invio fatturazione
   const [showModal, setShowModal] = useState(false);
@@ -65,9 +66,10 @@ export default function BillingPage() {
     }
   };
 
+  const resetSelection = () => { setSelected(new Set()); setOrdersById({}); };
+
   const fetchOrders = useCallback(async (p = 1, filtro = statoFiltro) => {
     setLoading(true);
-    setSelected(new Set());
     try {
       let statusParam;
       if (filtro === 'da_fatturare') statusParam = 'confermato';
@@ -87,6 +89,7 @@ export default function BillingPage() {
       });
       setOrders(data.data);
       setMeta(data);
+      setOrdersById(prev => { const next = { ...prev }; data.data.forEach(o => { next[o.id] = o; }); return next; });
     } finally {
       setLoading(false);
     }
@@ -96,12 +99,14 @@ export default function BillingPage() {
 
   const handleFilter = (e) => {
     e.preventDefault();
+    resetSelection();
     setPage(1);
     fetchOrders(1);
   };
 
   const handleTabChange = (tab) => {
     setStatoFiltro(tab);
+    resetSelection();
     setPage(1);
     fetchOrders(1, tab);
   };
@@ -112,11 +117,15 @@ export default function BillingPage() {
   const someSelected = allIds.some(id => selected.has(id));
 
   const toggleAll = () => {
-    if (allSelected) {
-      setSelected(new Set());
-    } else {
-      setSelected(new Set(allIds));
-    }
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (allSelected) {
+        allIds.forEach(id => next.delete(id));
+      } else {
+        allIds.forEach(id => next.add(id));
+      }
+      return next;
+    });
   };
 
   const toggleOne = (id) => {
@@ -127,7 +136,7 @@ export default function BillingPage() {
     });
   };
 
-  const selectedOrders = orders.filter(o => selected.has(o.id));
+  const selectedOrders = Array.from(selected).map(id => ordersById[id]).filter(Boolean);
   const totaleSelezionato = selectedOrders.reduce((acc, o) => {
     return acc + (parseFloat(o.totale_cliente) || 0);
   }, 0);
@@ -146,8 +155,7 @@ export default function BillingPage() {
       });
       setResults(data);
       setShowModal(false);
-      setSelected(new Set());
-      // Ricarica la lista (gli ordini fatturati non appariranno più)
+      resetSelection();
       fetchOrders(1);
     } catch (err) {
       setResults({
