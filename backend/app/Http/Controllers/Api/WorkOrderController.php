@@ -10,6 +10,7 @@ use App\Models\ClientRoute;
 use App\Models\CarrierRoute;
 use App\Models\MailLog;
 use App\Models\Setting;
+use App\Models\SavedStop;
 use App\Models\WorkOrder;
 use App\Models\WorkOrderUpdate;
 use Illuminate\Http\Request;
@@ -81,6 +82,7 @@ class WorkOrderController extends Controller
         // Salva tappe
         if (!empty($data['stops'])) {
             $order->stops()->createMany($data['stops']);
+            $this->upsertSavedStops($data['cliente_id'] ?? $order->cliente_id, $data['stops']);
         }
 
         // Salva referenti selezionati
@@ -146,6 +148,7 @@ class WorkOrderController extends Controller
         if (isset($data['stops'])) {
             $workOrder->stops()->delete();
             $workOrder->stops()->createMany($data['stops']);
+            $this->upsertSavedStops($workOrder->cliente_id, $data['stops']);
         }
 
         // 3. Aggiorna referenti
@@ -384,6 +387,29 @@ class WorkOrderController extends Controller
             'stops.*.note'             => 'nullable|string',
             'stops.*.km_da_precedente' => 'nullable|numeric',
         ]);
+    }
+
+    private function upsertSavedStops(?int $clienteId, array $stops): void
+    {
+        if (!$clienteId) return;
+        foreach ($stops as $stop) {
+            $ragSoc = trim($stop['ragione_sociale'] ?? '');
+            if ($ragSoc === '') continue;
+            SavedStop::updateOrCreate(
+                ['cliente_id' => $clienteId, 'ragione_sociale' => $ragSoc],
+                array_filter([
+                    'indirizzo'      => $stop['indirizzo'] ?? null,
+                    'citta'          => $stop['citta'] ?? null,
+                    'cap'            => $stop['cap'] ?? null,
+                    'provincia'      => $stop['provincia'] ?? null,
+                    'provincia_nome' => $stop['provincia_nome'] ?? null,
+                    'lat'            => $stop['lat'] ?? null,
+                    'lng'            => $stop['lng'] ?? null,
+                    'place_id'       => $stop['place_id'] ?? null,
+                    'note'           => $stop['note'] ?? null,
+                ], fn($v) => $v !== null && $v !== '')
+            );
+        }
     }
 
     private function loadFull(WorkOrder $order): WorkOrder

@@ -458,7 +458,7 @@ export default function WorkOrderFormPage() {
               La prima provincia di carico e l'ultima di scarico definiscono la tratta
             </span>
           </div>
-          <OrderStops stops={stops} onChange={handleStopsChange} />
+          <OrderStops stops={stops} onChange={handleStopsChange} clienteId={form.cliente_id || null} />
 
           <hr className="mo-divider" />
 

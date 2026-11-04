@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\AccessLogController;
 use App\Http\Controllers\Api\FicSyncController;
 use App\Http\Controllers\Api\MailLogController;
 use App\Http\Controllers\Api\StatisticsController;
+use App\Http\Controllers\Api\SavedStopController;
 use App\Http\Controllers\Api\CarrierUpdateController;
 use Illuminate\Support\Facades\Route;
 
@@ -79,6 +80,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Statistiche
     Route::get('statistics', [StatisticsController::class, 'index']);
+
+    // Tappe salvate (archivio per cliente)
+    Route::get('saved-stops', [SavedStopController::class, 'index']);
 
     // Ordini di lavoro
     Route::get('work-orders/prepare', [WorkOrderController::class, 'prepareData']);

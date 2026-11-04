@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import AddressAutocomplete from './AddressAutocomplete';
 
 const EMPTY_STOP = {
@@ -69,10 +69,81 @@ async function calcolaKmTappe(stops) {
   }
 }
 
-function StopCard({ stop, idx, colIdx, totalInCol, totalStops, onUpdate, onUpdateAddress, onMove, onRemove }) {
+function SavedStopDropdown({ clienteId, query, onSelect, onClose }) {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!clienteId || query.length < 1) { setResults([]); return; }
+    setLoading(true);
+    const params = new URLSearchParams({ cliente_id: clienteId, q: query });
+    fetch(`/api/saved-stops?${params}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    })
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { setResults(data); setLoading(false); })
+      .catch(() => { setResults([]); setLoading(false); });
+  }, [clienteId, query]);
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) onClose(); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [onClose]);
+
+  if (!clienteId || (!loading && results.length === 0)) return null;
+
+  return (
+    <div ref={ref} style={{
+      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000,
+      background: '#fff', border: '1px solid #d1d5db', borderRadius: 6,
+      boxShadow: '0 4px 12px rgba(0,0,0,0.12)', maxHeight: 220, overflowY: 'auto',
+    }}>
+      {loading && (
+        <div style={{ padding: '0.5rem 0.75rem', color: '#6b7280', fontSize: '0.85rem' }}>
+          <i className="bi bi-arrow-repeat me-1" />Ricerca...
+        </div>
+      )}
+      {results.map(s => (
+        <div key={s.id}
+          onMouseDown={e => { e.preventDefault(); onSelect(s); }}
+          style={{ padding: '0.45rem 0.75rem', cursor: 'pointer', borderBottom: '1px solid #f3f4f6', fontSize: '0.85rem' }}
+          className="saved-stop-item">
+          <div style={{ fontWeight: 600 }}>{s.ragione_sociale}</div>
+          {(s.citta || s.provincia) && (
+            <div style={{ color: '#6b7280', fontSize: '0.78rem' }}>
+              {s.citta}{s.provincia ? ` (${s.provincia})` : ''}
+              {s.indirizzo ? ` — ${s.indirizzo}` : ''}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StopCard({ stop, idx, colIdx, totalInCol, totalStops, clienteId, onUpdate, onUpdateAddress, onMove, onRemove }) {
+  const [showDropdown, setShowDropdown] = useState(false);
   const isCarico = stop.tipo === 'carico';
   const bg     = isCarico ? '#f0fdf4' : '#fff7ed';
   const border = isCarico ? '#bbf7d0' : '#fed7aa';
+
+  const handleSelectSavedStop = (saved) => {
+    setShowDropdown(false);
+    onUpdateAddress(idx, {
+      ragione_sociale: saved.ragione_sociale,
+      indirizzo:       saved.indirizzo      || '',
+      citta:           saved.citta          || '',
+      cap:             saved.cap            || '',
+      provincia:       saved.provincia      || '',
+      provincia_nome:  saved.provincia_nome || '',
+      lat:             saved.lat            || null,
+      lng:             saved.lng            || null,
+      place_id:        saved.place_id       || '',
+      note:            stop.note,
+    });
+  };
 
   return (
     <div className="mb-2 p-3" style={{ borderRadius: 10, background: bg, border: `1.5px solid ${border}` }}>
@@ -105,9 +176,20 @@ function StopCard({ stop, idx, colIdx, totalInCol, totalStops, onUpdate, onUpdat
       <div className="row g-2">
         <div className="col-12">
           <label className="mo-form-label">Ragione sociale / Nome luogo</label>
-          <input className="mo-form-control" value={stop.ragione_sociale || ''}
-            onChange={e => onUpdate(idx, 'ragione_sociale', e.target.value)}
-            placeholder="Es. GVM, Lucart, Magazzino..." />
+          <div style={{ position: 'relative' }}>
+            <input className="mo-form-control" value={stop.ragione_sociale || ''}
+              onChange={e => { onUpdate(idx, 'ragione_sociale', e.target.value); setShowDropdown(true); }}
+              onFocus={() => { if (stop.ragione_sociale) setShowDropdown(true); }}
+              placeholder="Es. GVM, Lucart, Magazzino..." />
+            {showDropdown && (
+              <SavedStopDropdown
+                clienteId={clienteId}
+                query={stop.ragione_sociale || ''}
+                onSelect={handleSelectSavedStop}
+                onClose={() => setShowDropdown(false)}
+              />
+            )}
+          </div>
         </div>
         <div className="col-12">
           <label className="mo-form-label">Indirizzo</label>
@@ -143,7 +225,7 @@ function StopCard({ stop, idx, colIdx, totalInCol, totalStops, onUpdate, onUpdat
   );
 }
 
-export default function OrderStops({ stops, onChange }) {
+export default function OrderStops({ stops, onChange, clienteId }) {
   const [calculating, setCalculating] = useState(false);
 
   const addStop = (tipo) => {
@@ -252,6 +334,7 @@ export default function OrderStops({ stops, onChange }) {
           {carichi.map((stop, colIdx) => (
             <StopCard key={stop._idx} stop={stop} idx={stop._idx} colIdx={colIdx}
               totalInCol={carichi.length} totalStops={stops.length}
+              clienteId={clienteId}
               onUpdate={updateStop} onUpdateAddress={updateStopAddress}
               onMove={moveStop} onRemove={removeStop} />
           ))}
@@ -277,6 +360,7 @@ export default function OrderStops({ stops, onChange }) {
           {scarichi.map((stop, colIdx) => (
             <StopCard key={stop._idx} stop={stop} idx={stop._idx} colIdx={colIdx}
               totalInCol={scarichi.length} totalStops={stops.length}
+              clienteId={clienteId}
               onUpdate={updateStop} onUpdateAddress={updateStopAddress}
               onMove={moveStop} onRemove={removeStop} />
           ))}
