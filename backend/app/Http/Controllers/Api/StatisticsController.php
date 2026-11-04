@@ -15,9 +15,12 @@ class StatisticsController extends Controller
         $mese   = $request->input('mese');
         $giorno = $request->input('giorno');
 
-        $baseAll = WorkOrder::whereYear('data_ordine', $anno)
-            ->when($mese,   fn($q) => $q->whereMonth('data_ordine', $mese))
-            ->when($giorno, fn($q) => $q->whereDay('data_ordine', $giorno));
+        // Data di riferimento = data del primo stop di carico per sequenza
+        $dc = '(SELECT data FROM order_stops WHERE work_order_id = work_orders.id AND tipo = "carico" ORDER BY sequenza ASC LIMIT 1)';
+
+        $baseAll = WorkOrder::whereRaw("YEAR({$dc}) = ?", [$anno])
+            ->when($mese,   fn($q) => $q->whereRaw("MONTH({$dc}) = ?", [$mese]))
+            ->when($giorno, fn($q) => $q->whereRaw("DAY({$dc}) = ?", [$giorno]));
 
         $baseEco = (clone $baseAll)->whereIn('status', ['confermato', 'chiuso', 'fatturato']);
 
@@ -33,16 +36,16 @@ class StatisticsController extends Controller
         // Andamento mensile (solo vista anno intero)
         $mensile = [];
         if (!$mese) {
-            $rows = WorkOrder::whereYear('data_ordine', $anno)
+            $rows = WorkOrder::whereRaw("YEAR({$dc}) = ?", [$anno])
                 ->whereIn('status', ['confermato', 'chiuso', 'fatturato'])
                 ->selectRaw("
-                    MONTH(data_ordine) as mese,
+                    MONTH({$dc}) as mese,
                     COUNT(*) as ordini,
                     SUM(COALESCE(prezzo_cliente,0) + COALESCE(supplemento_cliente,0)) as venduto,
                     SUM(COALESCE(costo_trasportatore,0) + COALESCE(supplemento_trasportatore,0)) as costo
                 ")
-                ->groupByRaw("MONTH(data_ordine)")
-                ->orderByRaw("MONTH(data_ordine)")
+                ->groupByRaw("MONTH({$dc})")
+                ->orderByRaw("MONTH({$dc})")
                 ->get()
                 ->keyBy('mese');
 
@@ -89,16 +92,16 @@ class StatisticsController extends Controller
             }
         } elseif ($mese) {
             $giorni = (int) date('t', mktime(0, 0, 0, (int)$mese, 1, (int)$anno));
-            $rows = WorkOrder::whereYear('data_ordine', $anno)
-                ->whereMonth('data_ordine', $mese)
+            $rows = WorkOrder::whereRaw("YEAR({$dc}) = ?", [$anno])
+                ->whereRaw("MONTH({$dc}) = ?", [$mese])
                 ->whereIn('status', ['confermato', 'chiuso', 'fatturato'])
                 ->selectRaw("
-                    DAY(data_ordine) as giorno,
+                    DAY({$dc}) as giorno,
                     COUNT(*) as ordini,
                     SUM(COALESCE(prezzo_cliente,0) + COALESCE(supplemento_cliente,0)) as venduto
                 ")
-                ->groupByRaw("DAY(data_ordine)")
-                ->orderByRaw("DAY(data_ordine)")
+                ->groupByRaw("DAY({$dc})")
+                ->orderByRaw("DAY({$dc})")
                 ->get()
                 ->keyBy('giorno');
 
