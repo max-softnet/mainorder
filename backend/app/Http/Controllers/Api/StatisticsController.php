@@ -123,15 +123,15 @@ class StatisticsController extends Controller
 
         // Top 10 clienti per fatturato
         $topClienti = (clone $baseEco)
-            ->whereNotNull('cliente_id')
-            ->selectRaw("cliente_id, COUNT(*) as ordini, SUM(COALESCE(prezzo_cliente,0) + COALESCE(supplemento_cliente,0)) as venduto, AVG(COALESCE(prezzo_cliente,0) + COALESCE(supplemento_cliente,0)) as media_prezzo")
-            ->groupBy('cliente_id')
+            ->whereNotNull('work_orders.cliente_id')
+            ->join('clients', 'clients.id', '=', 'work_orders.cliente_id')
+            ->selectRaw("work_orders.cliente_id, clients.ragione_sociale, COUNT(*) as ordini, SUM(COALESCE(prezzo_cliente,0) + COALESCE(supplemento_cliente,0)) as venduto, AVG(COALESCE(prezzo_cliente,0) + COALESCE(supplemento_cliente,0)) as media_prezzo")
+            ->groupBy('work_orders.cliente_id', 'clients.ragione_sociale')
             ->orderByDesc('venduto')
             ->limit(10)
-            ->with('cliente:id,ragione_sociale')
             ->get()
             ->map(fn($r) => [
-                'nome'        => $r->cliente?->ragione_sociale ?? '—',
+                'nome'        => $r->ragione_sociale ?? '—',
                 'ordini'      => $r->ordini,
                 'venduto'     => round((float)$r->venduto, 2),
                 'media_prezzo'=> round((float)$r->media_prezzo, 2),
@@ -139,48 +139,48 @@ class StatisticsController extends Controller
 
         // Top 10 clienti per numero ordini
         $topClientiOrdini = (clone $baseEco)
-            ->whereNotNull('cliente_id')
-            ->selectRaw("cliente_id, COUNT(*) as ordini, AVG(COALESCE(prezzo_cliente,0) + COALESCE(supplemento_cliente,0)) as media_prezzo")
-            ->groupBy('cliente_id')
+            ->whereNotNull('work_orders.cliente_id')
+            ->join('clients', 'clients.id', '=', 'work_orders.cliente_id')
+            ->selectRaw("work_orders.cliente_id, clients.ragione_sociale, COUNT(*) as ordini, AVG(COALESCE(prezzo_cliente,0) + COALESCE(supplemento_cliente,0)) as media_prezzo")
+            ->groupBy('work_orders.cliente_id', 'clients.ragione_sociale')
             ->orderByDesc('ordini')
             ->limit(10)
-            ->with('cliente:id,ragione_sociale')
             ->get()
             ->map(fn($r) => [
-                'nome'         => $r->cliente?->ragione_sociale ?? '—',
+                'nome'         => $r->ragione_sociale ?? '—',
                 'ordini'       => $r->ordini,
                 'media_prezzo' => round((float)$r->media_prezzo, 2),
             ]);
 
         // Top 10 trasportatori per costo
         $topCarrier = (clone $baseEco)
-            ->whereNotNull('carrier_id')
-            ->selectRaw("carrier_id, COUNT(*) as ordini, SUM(COALESCE(costo_trasportatore,0) + COALESCE(supplemento_trasportatore,0)) as costo, AVG(COALESCE(costo_trasportatore,0) + COALESCE(supplemento_trasportatore,0)) as media_costo")
-            ->groupBy('carrier_id')
+            ->whereNotNull('work_orders.carrier_id')
+            ->join('carriers', 'carriers.id', '=', 'work_orders.carrier_id')
+            ->selectRaw("work_orders.carrier_id, carriers.denominazione, COUNT(*) as ordini, SUM(COALESCE(costo_trasportatore,0) + COALESCE(supplemento_trasportatore,0)) as costo, AVG(COALESCE(costo_trasportatore,0) + COALESCE(supplemento_trasportatore,0)) as media_costo")
+            ->groupBy('work_orders.carrier_id', 'carriers.denominazione')
             ->orderByDesc('costo')
             ->limit(10)
-            ->with('carrier:id,denominazione')
             ->get()
             ->map(fn($r) => [
-                'nome'      => $r->carrier?->denominazione ?? '—',
-                'ordini'    => $r->ordini,
-                'costo'     => round((float)$r->costo, 2),
+                'nome'        => $r->denominazione ?? '—',
+                'ordini'      => $r->ordini,
+                'costo'       => round((float)$r->costo, 2),
                 'media_costo' => round((float)$r->media_costo, 2),
             ]);
 
         // Top 10 trasportatori per numero ordini
         $topCarrierOrdini = (clone $baseEco)
-            ->whereNotNull('carrier_id')
-            ->selectRaw("carrier_id, COUNT(*) as ordini, AVG(COALESCE(costo_trasportatore,0) + COALESCE(supplemento_trasportatore,0)) as media_costo")
-            ->groupBy('carrier_id')
+            ->whereNotNull('work_orders.carrier_id')
+            ->join('carriers', 'carriers.id', '=', 'work_orders.carrier_id')
+            ->selectRaw("work_orders.carrier_id, carriers.denominazione, COUNT(*) as ordini, AVG(COALESCE(costo_trasportatore,0) + COALESCE(supplemento_trasportatore,0)) as media_costo")
+            ->groupBy('work_orders.carrier_id', 'carriers.denominazione')
             ->orderByDesc('ordini')
             ->limit(10)
-            ->with('carrier:id,denominazione')
             ->get()
             ->map(fn($r) => [
-                'nome'       => $r->carrier?->denominazione ?? '—',
-                'ordini'     => $r->ordini,
-                'media_costo'=> round((float)$r->media_costo, 2),
+                'nome'        => $r->denominazione ?? '—',
+                'ordini'      => $r->ordini,
+                'media_costo' => round((float)$r->media_costo, 2),
             ]);
 
         return response()->json([
