@@ -133,6 +133,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('fic/clients/preview', [FicSyncController::class, 'preview']);
     Route::post('fic/clients/import', [FicSyncController::class, 'import']);
     Route::post('fic/clients/sync-vat', [FicSyncController::class, 'syncVat']);
+    Route::get('clients/{client}/fic-preview', [FicSyncController::class, 'clientPreview']);
+    Route::post('clients/{client}/fic-sync', [FicSyncController::class, 'clientSync']);
 
     // Utenti (solo admin)
     Route::apiResource('users', UserController::class);

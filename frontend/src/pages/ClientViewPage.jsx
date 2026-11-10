@@ -39,6 +39,10 @@ export default function ClientViewPage() {
   const [orders, setOrders] = useState([]);
   const [routes, setRoutes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [ficDiff, setFicDiff]   = useState(null);
+  const [ficChecking, setFicChecking] = useState(false);
+  const [ficSyncing, setFicSyncing]   = useState(false);
+  const [ficError, setFicError] = useState(null);
   usePageTitle('Clienti', client?.ragione_sociale || '...');
 
   const isAdminOp = user?.role === 'admin' || user?.role === 'operatore';
@@ -54,6 +58,33 @@ export default function ClientViewPage() {
       setRoutes(r.data || []);
     }).finally(() => setLoading(false));
   }, [id]);
+
+  const handleFicCheck = async () => {
+    setFicChecking(true);
+    setFicError(null);
+    setFicDiff(null);
+    try {
+      const { data } = await api.get(`/clients/${id}/fic-preview`);
+      setFicDiff(data.diff);
+    } catch (e) {
+      setFicError(e.response?.data?.error || e.message || 'Errore controllo FiC.');
+    } finally {
+      setFicChecking(false);
+    }
+  };
+
+  const handleFicSync = async () => {
+    setFicSyncing(true);
+    try {
+      const { data } = await api.post(`/clients/${id}/fic-sync`);
+      setClient(data.client);
+      setFicDiff(null);
+    } catch (e) {
+      setFicError(e.response?.data?.error || e.message || 'Errore aggiornamento FiC.');
+    } finally {
+      setFicSyncing(false);
+    }
+  };
 
   if (loading) return <Layout><div className="mo-text-muted p-4">Caricamento...</div></Layout>;
   if (!client) return <Layout><div className="mo-text-muted p-4">Cliente non trovato.</div></Layout>;
@@ -84,6 +115,13 @@ export default function ClientViewPage() {
             >
               <i className="bi bi-receipt me-1" /> Ordini da fatturare
             </button>
+            {client.fic_id && (
+              <button className="mo-btn mo-btn-ghost" onClick={handleFicCheck} disabled={ficChecking}>
+                {ficChecking
+                  ? <><span className="spinner-border spinner-border-sm me-1" />Controllo FiC...</>
+                  : <><i className="bi bi-cloud-arrow-down me-1" />Controlla FiC</>}
+              </button>
+            )}
             <button className="mo-btn mo-btn-outline" onClick={() => navigate(`/clients/${id}/edit`)}>
               <i className="bi bi-pencil me-1" /> Modifica
             </button>
@@ -270,6 +308,60 @@ export default function ClientViewPage() {
           </div>
         </div>
       </div>
+      {/* Modale diff FiC */}
+      {ficDiff !== null && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="mo-card" style={{ width: '100%', maxWidth: 560, maxHeight: '80vh', overflowY: 'auto' }}>
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <h2 className="mo-page-title mb-0" style={{ fontSize: '1.1rem' }}>
+                <i className="bi bi-cloud-arrow-down me-2" />Confronto con Fatture in Cloud
+              </h2>
+              <button className="mo-btn mo-btn-ghost" onClick={() => setFicDiff(null)}>
+                <i className="bi bi-x-lg" />
+              </button>
+            </div>
+
+            {ficDiff.length === 0 ? (
+              <div style={{ padding: '1rem', background: '#f0fdf4', borderRadius: 8, color: '#166534', fontWeight: 500 }}>
+                <i className="bi bi-check-circle me-2" />Anagrafica già aggiornata, nessuna differenza trovata.
+              </div>
+            ) : (
+              <>
+                <p className="mo-text-muted mb-3" style={{ fontSize: '0.88rem' }}>
+                  Trovate <strong>{ficDiff.length}</strong> differenze rispetto ai dati su FiC:
+                </p>
+                <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse', marginBottom: '1rem' }}>
+                  <thead>
+                    <tr style={{ background: '#f9fafb' }}>
+                      <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left', fontWeight: 600, color: '#6b7280', borderBottom: '1px solid #e5e7eb' }}>Campo</th>
+                      <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left', fontWeight: 600, color: '#6b7280', borderBottom: '1px solid #e5e7eb' }}>Locale</th>
+                      <th style={{ padding: '0.4rem 0.6rem', textAlign: 'left', fontWeight: 600, color: '#166534', borderBottom: '1px solid #e5e7eb' }}>Da FiC</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {ficDiff.map(d => (
+                      <tr key={d.field} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                        <td style={{ padding: '0.4rem 0.6rem', fontWeight: 600, color: '#374151' }}>{d.label}</td>
+                        <td style={{ padding: '0.4rem 0.6rem', color: '#9ca3af' }}>{d.local ?? '—'}</td>
+                        <td style={{ padding: '0.4rem 0.6rem', color: '#166534', fontWeight: 500 }}>{d.fic != null ? String(d.fic) : '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {ficError && <div style={{ color: '#dc2626', fontSize: '0.85rem', marginBottom: '0.75rem' }}>{ficError}</div>}
+                <div className="d-flex gap-2 justify-content-end">
+                  <button className="mo-btn mo-btn-ghost" onClick={() => setFicDiff(null)}>Annulla</button>
+                  <button className="mo-btn mo-btn-primary" onClick={handleFicSync} disabled={ficSyncing}>
+                    {ficSyncing
+                      ? <><span className="spinner-border spinner-border-sm me-1" />Aggiornamento...</>
+                      : <><i className="bi bi-cloud-check me-1" />Aggiorna anagrafica</>}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

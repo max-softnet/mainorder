@@ -135,6 +135,63 @@ class FicSyncController extends Controller
         ]);
     }
 
+    public function clientPreview(Request $request, Client $client)
+    {
+        if (!$request->user()->isAdmin() && !$request->user()->isOperatore()) abort(403);
+        if (!$client->fic_id) return response()->json(['error' => 'Cliente non collegato a FiC.'], 422);
+
+        $detail = $this->fic->getClient((int) $client->fic_id);
+        $mapped = $this->mapFields($detail);
+
+        $labels = [
+            'ragione_sociale'        => 'Ragione sociale',
+            'partita_iva'            => 'P.IVA',
+            'codice_fiscale'         => 'Cod. Fiscale',
+            'sdi'                    => 'Codice SDI',
+            'email'                  => 'Email',
+            'telefono'               => 'Telefono',
+            'indirizzo'              => 'Indirizzo',
+            'citta'                  => 'Città',
+            'cap'                    => 'CAP',
+            'provincia'              => 'Provincia',
+            'fatturazione_indirizzo' => 'Ind. fatturazione',
+            'fatturazione_citta'     => 'Città fatturazione',
+            'fatturazione_cap'       => 'CAP fatturazione',
+            'fatturazione_provincia' => 'Prov. fatturazione',
+            'fic_default_vat'        => 'Aliquota IVA',
+            'fic_default_vat_id'     => 'ID IVA FiC',
+        ];
+
+        $diff = [];
+        foreach ($mapped as $key => $ficValue) {
+            $localValue = $client->$key ?? null;
+            $ficStr   = (string)($ficValue ?? '');
+            $localStr = (string)($localValue ?? '');
+            if ($ficStr !== $localStr) {
+                $diff[] = [
+                    'field'  => $key,
+                    'label'  => $labels[$key] ?? $key,
+                    'local'  => $localValue,
+                    'fic'    => $ficValue,
+                ];
+            }
+        }
+
+        return response()->json(['diff' => $diff, 'fic_data' => $mapped]);
+    }
+
+    public function clientSync(Request $request, Client $client)
+    {
+        if (!$request->user()->isAdmin() && !$request->user()->isOperatore()) abort(403);
+        if (!$client->fic_id) return response()->json(['error' => 'Cliente non collegato a FiC.'], 422);
+
+        $detail = $this->fic->getClient((int) $client->fic_id);
+        $mapped = $this->mapFields($detail);
+        $client->update($mapped);
+
+        return response()->json(['success' => true, 'client' => $client->fresh()]);
+    }
+
     private function mapFields(array $fc): array
     {
         $provincia  = mb_substr($fc['address_province'] ?? '', 0, 5) ?: null;
