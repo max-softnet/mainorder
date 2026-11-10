@@ -192,11 +192,9 @@ class FicSyncController extends Controller
 
     private function mapFields(array $fc): array
     {
-        $provincia  = mb_substr($fc['address_province'] ?? '', 0, 5) ?: null;
-        $defaultVat   = $fc['default_vat']['value'] ?? null;
-        $defaultVatId = isset($fc['default_vat']['id']) ? (int) $fc['default_vat']['id'] : null;
+        $provincia = mb_substr($fc['address_province'] ?? '', 0, 5) ?: null;
 
-        return [
+        $mapped = [
             'ragione_sociale'          => $fc['name'] ?? '',
             'partita_iva'              => $fc['vat_number'] ?? null,
             'codice_fiscale'           => $fc['tax_code'] ?? null,
@@ -211,9 +209,15 @@ class FicSyncController extends Controller
             'fatturazione_citta'       => $fc['address_city'] ?? null,
             'fatturazione_cap'         => mb_substr($fc['address_postal_code'] ?? '', 0, 10) ?: null,
             'fatturazione_provincia'   => $provincia,
-            'fic_default_vat'          => $defaultVat !== null ? (float) $defaultVat : null,
-            'fic_default_vat_id'       => $defaultVatId,
         ];
+
+        // default_vat è presente solo nella risposta getClient (dettaglio), non nella lista
+        if (array_key_exists('default_vat', $fc)) {
+            $mapped['fic_default_vat']    = $fc['default_vat']['value'] !== null ? (float) $fc['default_vat']['value'] : null;
+            $mapped['fic_default_vat_id'] = isset($fc['default_vat']['id']) ? (int) $fc['default_vat']['id'] : null;
+        }
+
+        return $mapped;
     }
 
     private function normalize($value): string
