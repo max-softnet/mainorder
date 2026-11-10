@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Layout from '../components/Layout';
 import api from '../api/axios';
 import usePageTitle from '../hooks/usePageTitle';
@@ -19,6 +19,7 @@ export default function FicSyncPage() {
   const [result, setResult]     = useState(null);
   const [vatResult, setVatResult] = useState(null);
   const [syncingVat, setSyncingVat] = useState(false);
+  const [vatProgress, setVatProgress] = useState(null);
   const [error, setError]       = useState(null);
 
   const loadPreview = async () => {
@@ -78,13 +79,39 @@ export default function FicSyncPage() {
     setSyncingVat(true);
     setError(null);
     setVatResult(null);
+    setVatProgress(null);
+
+    const CHUNK = 10;
     try {
-      const { data } = await api.post('/fic/clients/sync-vat');
-      setVatResult(data);
+      // Recupera tutti i clienti locali con fic_id
+      const { data: allClients } = await api.get('/clients', { params: { per_page: 500 } });
+      const ficIds = (allClients.data ?? allClients)
+        .map(c => c.fic_id)
+        .filter(Boolean);
+
+      if (ficIds.length === 0) {
+        setVatResult({ updated: 0, errors: [] });
+        return;
+      }
+
+      let totalUpdated = 0;
+      const allErrors = [];
+      const chunks = [];
+      for (let i = 0; i < ficIds.length; i += CHUNK) chunks.push(ficIds.slice(i, i + CHUNK));
+
+      for (let i = 0; i < chunks.length; i++) {
+        setVatProgress({ done: i * CHUNK, total: ficIds.length });
+        const { data } = await api.post('/fic/clients/sync-vat', { fic_ids: chunks[i] });
+        totalUpdated += data.updated ?? 0;
+        allErrors.push(...(data.errors ?? []));
+      }
+
+      setVatResult({ updated: totalUpdated, errors: allErrors });
     } catch (e) {
       setError(e.response?.data?.message || e.message || 'Errore aggiornamento IVA.');
     } finally {
       setSyncingVat(false);
+      setVatProgress(null);
     }
   };
 
@@ -111,7 +138,9 @@ export default function FicSyncPage() {
           </button>
           <button className="mo-btn mo-btn-outline" onClick={handleSyncVat} disabled={syncingVat}>
             {syncingVat
-              ? <><span className="spinner-border spinner-border-sm me-2" />Aggiornamento IVA...</>
+              ? <><span className="spinner-border spinner-border-sm me-2" />
+                  {vatProgress ? `Aggiornamento IVA... ${vatProgress.done}/${vatProgress.total}` : 'Recupero clienti...'}
+                </>
               : <><i className="bi bi-percent me-1" />Aggiorna IVA su tutti i clienti</>}
           </button>
         </div>

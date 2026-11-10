@@ -18,9 +18,15 @@ class FicSyncController extends Controller
     {
         if (!$request->user()->isAdmin() && !$request->user()->isOperatore()) abort(403);
 
-        $clients  = Client::whereNotNull('fic_id')->get();
-        $updated  = 0;
-        $errors   = [];
+        $request->validate(['fic_ids' => 'nullable|array', 'fic_ids.*' => 'integer']);
+
+        $query   = Client::whereNotNull('fic_id');
+        if ($request->filled('fic_ids')) {
+            $query->whereIn('fic_id', $request->fic_ids);
+        }
+        $clients = $query->get();
+        $updated = 0;
+        $errors  = [];
 
         foreach ($clients as $client) {
             try {
