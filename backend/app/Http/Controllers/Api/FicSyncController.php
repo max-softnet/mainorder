@@ -59,12 +59,12 @@ class FicSyncController extends Controller
             $ficId    = $fc['id'] ?? null;
             $existing = $ficId ? Client::withTrashed()->where('fic_id', $ficId)->first() : null;
 
-            $mapped = $this->mapFields($fc);
-
             if (!$existing) {
                 $status = 'new';
             } else {
-                $diff = $this->hasDiff($existing, $mapped);
+                // Nella preview dalla lista confrontiamo solo i campi chiave affidabili
+                $keyFields = $this->mapKeyFields($fc);
+                $diff = $this->hasDiff($existing, $keyFields);
                 $status = $diff ? 'update' : 'same';
             }
 
@@ -188,6 +188,18 @@ class FicSyncController extends Controller
         $client->update($mapped);
 
         return response()->json(['success' => true, 'client' => $client->fresh()]);
+    }
+
+    private function mapKeyFields(array $fc): array
+    {
+        return [
+            'ragione_sociale' => $fc['name'] ?? '',
+            'partita_iva'     => $fc['vat_number'] ?? null,
+            'codice_fiscale'  => $fc['tax_code'] ?? null,
+            'sdi'             => $fc['ei_code'] ?? null,
+            'email'           => $fc['email'] ?? null,
+            'telefono'        => $fc['phone'] ?? null,
+        ];
     }
 
     private function mapFields(array $fc): array
