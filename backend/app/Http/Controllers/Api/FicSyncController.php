@@ -212,8 +212,8 @@ class FicSyncController extends Controller
         ];
 
         // default_vat è presente solo nella risposta getClient (dettaglio), non nella lista
-        if (array_key_exists('default_vat', $fc)) {
-            $mapped['fic_default_vat']    = $fc['default_vat']['value'] !== null ? (float) $fc['default_vat']['value'] : null;
+        if (array_key_exists('default_vat', $fc) && is_array($fc['default_vat'])) {
+            $mapped['fic_default_vat']    = isset($fc['default_vat']['value']) ? (float) $fc['default_vat']['value'] : null;
             $mapped['fic_default_vat_id'] = isset($fc['default_vat']['id']) ? (int) $fc['default_vat']['id'] : null;
         }
 
