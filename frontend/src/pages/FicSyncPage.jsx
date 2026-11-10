@@ -249,6 +249,16 @@ export default function FicSyncPage() {
                           {row.deleted && (
                             <span style={{ fontSize: 11, color: '#991b1b', marginLeft: 6 }}>(eliminato localmente)</span>
                           )}
+                          {row.status === 'update' && row.diff_fields?.length > 0 && (
+                            <div style={{ fontSize: 11, color: '#854d0e', marginTop: 2 }}>
+                              {row.diff_fields.map(d => (
+                                <span key={d.field} title={`locale: "${d.local}" → FiC: "${d.fic}"`}
+                                  style={{ marginRight: 4, background: '#fef3c7', padding: '1px 5px', borderRadius: 4, cursor: 'help' }}>
+                                  {d.field}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </td>
                       </tr>
                     );

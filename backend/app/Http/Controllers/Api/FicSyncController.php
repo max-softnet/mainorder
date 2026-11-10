@@ -59,13 +59,14 @@ class FicSyncController extends Controller
             $ficId    = $fc['id'] ?? null;
             $existing = $ficId ? Client::withTrashed()->where('fic_id', $ficId)->first() : null;
 
+            $diffFields = [];
             if (!$existing) {
                 $status = 'new';
             } else {
                 // Nella preview dalla lista confrontiamo solo i campi chiave affidabili
                 $keyFields = $this->mapKeyFields($fc);
-                $diff = $this->hasDiff($existing, $keyFields);
-                $status = $diff ? 'update' : 'same';
+                $diffFields = $this->getDiffFields($existing, $keyFields);
+                $status = count($diffFields) > 0 ? 'update' : 'same';
             }
 
             $result[] = [
@@ -77,6 +78,7 @@ class FicSyncController extends Controller
                 'status'          => $status,
                 'local_id'        => $existing?->id,
                 'deleted'         => $existing?->deleted_at !== null,
+                'diff_fields'     => $diffFields,
             ];
         }
 
@@ -241,11 +243,24 @@ class FicSyncController extends Controller
 
     private function hasDiff(Client $existing, array $mapped): bool
     {
+        return count($this->getDiffFields($existing, $mapped)) > 0;
+    }
+
+    private function getDiffFields(Client $existing, array $mapped): array
+    {
+        $diffs = [];
         foreach ($mapped as $key => $value) {
-            if ($this->normalize($existing->$key ?? null) !== $this->normalize($value)) {
-                return true;
+            $local = $existing->$key ?? null;
+            $normLocal = $this->normalize($local);
+            $normFic   = $this->normalize($value);
+            if ($normLocal !== $normFic) {
+                $diffs[] = [
+                    'field' => $key,
+                    'local' => $local,
+                    'fic'   => $value,
+                ];
             }
         }
-        return false;
+        return $diffs;
     }
 }
