@@ -165,9 +165,7 @@ class FicSyncController extends Controller
         $diff = [];
         foreach ($mapped as $key => $ficValue) {
             $localValue = $client->$key ?? null;
-            $ficStr   = (string)($ficValue ?? '');
-            $localStr = (string)($localValue ?? '');
-            if ($ficStr !== $localStr) {
+            if ($this->normalize($localValue) !== $this->normalize($ficValue)) {
                 $diff[] = [
                     'field'  => $key,
                     'label'  => $labels[$key] ?? $key,
@@ -218,10 +216,17 @@ class FicSyncController extends Controller
         ];
     }
 
+    private function normalize($value): string
+    {
+        if ($value === null || $value === '') return '';
+        if (is_numeric($value)) return (string)(float)$value;
+        return (string)$value;
+    }
+
     private function hasDiff(Client $existing, array $mapped): bool
     {
         foreach ($mapped as $key => $value) {
-            if ((string)($existing->$key ?? '') !== (string)($value ?? '')) {
+            if ($this->normalize($existing->$key ?? null) !== $this->normalize($value)) {
                 return true;
             }
         }
