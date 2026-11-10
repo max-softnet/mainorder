@@ -121,6 +121,9 @@ export default function ClientViewPage() {
             <Row label="P.IVA"          value={client.partita_iva} />
             <Row label="Cod. Fiscale"   value={client.codice_fiscale} />
             <Row label="Codice SDI"     value={client.sdi} />
+            {client.fic_default_vat != null && (
+              <Row label="Aliquota IVA" value={`${client.fic_default_vat}%`} />
+            )}
             {client.fic_id && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.45rem 0', borderBottom: '1px solid #f3f4f6' }}>
                 <span style={{ fontSize: '0.78rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', color: '#9ca3af', minWidth: 160 }}>
