@@ -198,7 +198,6 @@ class FicSyncController extends Controller
             'ragione_sociale' => $fc['name'] ?? '',
             'partita_iva'     => $fc['vat_number'] ?? null,
             'codice_fiscale'  => $fc['tax_code'] ?? null,
-            'sdi'             => $fc['ei_code'] ?? null,
             'email'           => $fc['email'] ?? null,
             'telefono'        => $fc['phone'] ?? null,
         ];
