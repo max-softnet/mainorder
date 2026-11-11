@@ -43,6 +43,11 @@ export default function ClientViewPage() {
   const [ficChecking, setFicChecking] = useState(false);
   const [ficSyncing, setFicSyncing]   = useState(false);
   const [ficError, setFicError] = useState(null);
+  const [savedStops, setSavedStops]   = useState(null);
+  const [stopsLoading, setStopsLoading] = useState(false);
+  const [editingStop, setEditingStop]   = useState(null); // { id, ragione_sociale, indirizzo, citta, cap, provincia, note }
+  const [stopSaving, setStopSaving]     = useState(false);
+  const [stopError, setStopError]       = useState(null);
   usePageTitle('Clienti', client?.ragione_sociale || '...');
 
   const isAdminOp = user?.role === 'admin' || user?.role === 'operatore';
@@ -70,6 +75,51 @@ export default function ClientViewPage() {
       setFicError(e.response?.data?.error || e.message || 'Errore controllo FiC.');
     } finally {
       setFicChecking(false);
+    }
+  };
+
+  const loadSavedStops = async () => {
+    setStopsLoading(true);
+    setStopError(null);
+    try {
+      const { data } = await api.get('/saved-stops', { params: { cliente_id: id } });
+      setSavedStops(data);
+    } catch {
+      setStopError('Errore caricamento tappe salvate.');
+    } finally {
+      setStopsLoading(false);
+    }
+  };
+
+  const handleSaveStop = async () => {
+    if (!editingStop) return;
+    setStopSaving(true);
+    setStopError(null);
+    try {
+      const { data } = await api.put(`/saved-stops/${editingStop.id}`, {
+        ragione_sociale: editingStop.ragione_sociale,
+        indirizzo:       editingStop.indirizzo || null,
+        citta:           editingStop.citta     || null,
+        cap:             editingStop.cap       || null,
+        provincia:       editingStop.provincia || null,
+        note:            editingStop.note      || null,
+      });
+      setSavedStops(prev => prev.map(s => s.id === data.id ? data : s));
+      setEditingStop(null);
+    } catch {
+      setStopError('Errore salvataggio.');
+    } finally {
+      setStopSaving(false);
+    }
+  };
+
+  const handleDeleteStop = async (stopId) => {
+    if (!window.confirm('Eliminare questa tappa salvata?')) return;
+    try {
+      await api.delete(`/saved-stops/${stopId}`);
+      setSavedStops(prev => prev.filter(s => s.id !== stopId));
+    } catch {
+      setStopError('Errore eliminazione.');
     }
   };
 
@@ -239,6 +289,112 @@ export default function ClientViewPage() {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tappe salvate */}
+        {isAdminOp && (
+          <div className="col-12">
+            <div className="mo-card">
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <div style={{ fontWeight: 600 }}>
+                  <i className="bi bi-pin-map me-2" style={{ color: 'var(--mo-purple)' }} />
+                  Tappe salvate
+                </div>
+                {savedStops === null && (
+                  <button className="mo-btn mo-btn-ghost" style={{ fontSize: '0.82rem' }}
+                    onClick={loadSavedStops} disabled={stopsLoading}>
+                    {stopsLoading
+                      ? <><span className="spinner-border spinner-border-sm me-1" />Caricamento...</>
+                      : <><i className="bi bi-eye me-1" />Mostra</>}
+                  </button>
+                )}
+              </div>
+
+              {stopError && (
+                <div className="alert alert-danger py-2 mb-2" style={{ fontSize: '0.85rem' }}>{stopError}</div>
+              )}
+
+              {savedStops !== null && (
+                savedStops.length === 0 ? (
+                  <div className="mo-text-muted text-center py-3" style={{ fontSize: '0.85rem' }}>
+                    Nessuna tappa salvata per questo cliente.
+                  </div>
+                ) : (
+                  <div className="mo-table-wrap">
+                    <table className="mo-table" style={{ fontSize: '0.85rem' }}>
+                      <thead>
+                        <tr>
+                          <th>Ragione sociale</th>
+                          <th>Città</th>
+                          <th>Provincia</th>
+                          <th>Indirizzo</th>
+                          <th>Note</th>
+                          <th style={{ width: 90 }}></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {savedStops.map(s => (
+                          editingStop?.id === s.id ? (
+                            <tr key={s.id} style={{ background: '#faf5ff' }}>
+                              <td><input className="mo-form-control" style={{ fontSize: '0.82rem' }}
+                                value={editingStop.ragione_sociale}
+                                onChange={e => setEditingStop(p => ({ ...p, ragione_sociale: e.target.value }))} /></td>
+                              <td><input className="mo-form-control" style={{ fontSize: '0.82rem' }}
+                                value={editingStop.citta || ''}
+                                onChange={e => setEditingStop(p => ({ ...p, citta: e.target.value }))} /></td>
+                              <td><input className="mo-form-control" style={{ fontSize: '0.82rem', maxWidth: 60 }}
+                                value={editingStop.provincia || ''}
+                                onChange={e => setEditingStop(p => ({ ...p, provincia: e.target.value }))} /></td>
+                              <td><input className="mo-form-control" style={{ fontSize: '0.82rem' }}
+                                value={editingStop.indirizzo || ''}
+                                onChange={e => setEditingStop(p => ({ ...p, indirizzo: e.target.value }))} /></td>
+                              <td><input className="mo-form-control" style={{ fontSize: '0.82rem' }}
+                                value={editingStop.note || ''}
+                                onChange={e => setEditingStop(p => ({ ...p, note: e.target.value }))} /></td>
+                              <td>
+                                <div className="d-flex gap-1">
+                                  <button className="mo-btn mo-btn-ghost" style={{ padding: '0.2rem 0.5rem', color: '#059669' }}
+                                    onClick={handleSaveStop} disabled={stopSaving}>
+                                    <i className="bi bi-check-lg" />
+                                  </button>
+                                  <button className="mo-btn mo-btn-ghost" style={{ padding: '0.2rem 0.5rem' }}
+                                    onClick={() => setEditingStop(null)}>
+                                    <i className="bi bi-x-lg" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ) : (
+                            <tr key={s.id}>
+                              <td style={{ fontWeight: 600 }}>{s.ragione_sociale}</td>
+                              <td>{s.citta || '—'}</td>
+                              <td>{s.provincia || '—'}</td>
+                              <td className="mo-text-muted">{s.indirizzo || '—'}</td>
+                              <td className="mo-text-muted" style={{ maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                {s.note || '—'}
+                              </td>
+                              <td>
+                                <div className="d-flex gap-1">
+                                  <button className="mo-btn mo-btn-ghost" style={{ padding: '0.2rem 0.5rem' }}
+                                    onClick={() => setEditingStop({ ...s })} title="Modifica">
+                                    <i className="bi bi-pencil" />
+                                  </button>
+                                  <button className="mo-btn mo-btn-ghost" style={{ padding: '0.2rem 0.5rem', color: '#ef4444' }}
+                                    onClick={() => handleDeleteStop(s.id)} title="Elimina">
+                                    <i className="bi bi-trash" />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              )}
             </div>
           </div>
         )}

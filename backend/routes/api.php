@@ -83,6 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Tappe salvate (archivio per cliente)
     Route::get('saved-stops', [SavedStopController::class, 'index']);
+    Route::put('saved-stops/{savedStop}', [SavedStopController::class, 'update']);
+    Route::delete('saved-stops/{savedStop}', [SavedStopController::class, 'destroy']);
 
     // Ordini di lavoro
     Route::get('work-orders/prepare', [WorkOrderController::class, 'prepareData']);
