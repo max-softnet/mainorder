@@ -279,8 +279,9 @@ export default function WorkOrderViewPage() {
               <i className="bi bi-arrow-counterclockwise me-1" /> Riporta a confermato
             </button>
           )}
-          <button className="mo-btn mo-btn-ghost" onClick={handleClone} title="Clona ordine">
-            <i className="bi bi-copy me-1" /> Clona
+          <button onClick={handleClone} title="Clona ordine"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', background: '#f0fdf4', color: '#15803d' }}>
+            <i className="bi bi-copy" /> Clona
           </button>
           {canEdit && (
             <button className="mo-btn mo-btn-primary" onClick={() => navigate(`/work-orders/${id}/edit`)}>
@@ -343,8 +344,8 @@ export default function WorkOrderViewPage() {
               <i className="bi bi-envelope me-1" /> Mail
             </button>
           )}
-          <button className="mo-btn mo-btn-ghost" style={{ flex: 1 }} onClick={handleClone}>
-            <i className="bi bi-copy me-1" /> Clona
+          <button onClick={handleClone} style={{ flex: 1, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', background: '#f0fdf4', color: '#15803d' }}>
+            <i className="bi bi-copy" /> Clona
           </button>
           {user?.role === 'admin' && order.status === 'fatturato' && (
             <button className="mo-btn mo-btn-ghost" style={{ flex: 1, color: '#d97706' }} disabled={saving} onClick={handleUnbill}>
