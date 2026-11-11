@@ -113,6 +113,10 @@ export default function AddressAutocomplete({
   value, onChange, placeholder = 'Cerca indirizzo...', disabled = false,
 }) {
   const [inputValue, setInputValue] = useState(value || '');
+
+  useEffect(() => {
+    setInputValue(value || '');
+  }, [value]);
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
