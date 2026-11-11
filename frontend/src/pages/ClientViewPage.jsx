@@ -160,19 +160,20 @@ export default function ClientViewPage() {
         {isAdminOp && (
           <div className="d-flex gap-2">
             <button
-              className="mo-btn mo-btn-ghost"
               onClick={() => navigate(`/billing?cliente_id=${id}&cliente_nome=${encodeURIComponent(client.ragione_sociale)}`)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', background: '#fff7ed', color: '#c2410c' }}
             >
-              <i className="bi bi-receipt me-1" /> Ordini da fatturare
+              <i className="bi bi-receipt" /> Ordini da fatturare
             </button>
             {client.fic_id && (
-              <button className="mo-btn mo-btn-ghost" onClick={handleFicCheck} disabled={ficChecking}>
+              <button onClick={handleFicCheck} disabled={ficChecking}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.45rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', background: '#ede9fe', color: '#6d28d9', opacity: ficChecking ? 0.7 : 1 }}>
                 {ficChecking
-                  ? <><span className="spinner-border spinner-border-sm me-1" />Controllo FiC...</>
-                  : <><i className="bi bi-cloud-arrow-down me-1" />Controlla FiC</>}
+                  ? <><span className="spinner-border spinner-border-sm" />Controllo...</>
+                  : <><i className="bi bi-cloud-arrow-down" />Controlla FiC</>}
               </button>
             )}
-            <button className="mo-btn mo-btn-outline" onClick={() => navigate(`/clients/${id}/edit`)}>
+            <button className="mo-btn mo-btn-primary" onClick={() => navigate(`/clients/${id}/edit`)}>
               <i className="bi bi-pencil me-1" /> Modifica
             </button>
           </div>
