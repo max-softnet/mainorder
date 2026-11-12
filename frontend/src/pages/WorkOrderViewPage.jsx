@@ -162,7 +162,7 @@ export default function WorkOrderViewPage() {
 
   const handleClone = async () => {
     const { data } = await api.get(`/work-orders/${id}`);
-    const { stops: rawStops, carrier_contacts: cc, documents, numero_ordine, numero_tmp, status, nome_autista, targa_motrice, targa_rimorchio, rif_ddt, annotazioni_mail, annotazioni, ...rest } = data;
+    const { stops: rawStops, carrier_contacts: cc, documents, numero_ordine, numero_tmp, status, nome_autista, targa_motrice, targa_rimorchio, rif_ddt, ...rest } = data;
     const DATE_FIELDS = ['data_ordine', 'data_carico', 'data_scarico'];
     DATE_FIELDS.forEach(f => { if (rest[f]) rest[f] = rest[f].slice(0, 10); });
     const cloneForm = {
